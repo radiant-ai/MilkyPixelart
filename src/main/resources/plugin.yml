@@ -1,0 +1,7 @@
+name: MilkyPixelart
+version: '${project.version}'
+main: fun.milkyway.milkypixelart.MilkyPixelart
+api-version: 1.18
+depend:
+  - ProtocolLib
+  - Vault
