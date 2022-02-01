@@ -47,10 +47,10 @@ public class PixelartCommand extends BaseCommand {
                         Component.text(" ")
                 )
                 .append(
-                        Component.text("by Radiant ").color(TextColor.fromHexString("#9AFF0F"))
+                        Component.text(plugin.getDescription().getVersion()).color(TextColor.fromHexString("#FFFF99"))
                 )
                 .append(
-                        Component.text(plugin.getDescription().getVersion()).color(TextColor.fromHexString("#FFFF99"))
+                        Component.text(" by Radiant").color(TextColor.fromHexString("#9AFF0F"))
                 )
                 .append(
                         Component.newline()

@@ -1,6 +1,5 @@
 package fun.milkyway.milkypixelart.pixelartmanager;
 
-import co.aikar.commands.InvalidCommandArgument;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
@@ -49,7 +48,7 @@ import java.util.logging.Level;
 public class PixelartManager {
     private final MilkyPixelart plugin;
     private final Random random;
-    private final ExecutorService mapFileParserExecutor;
+    private final ThreadPoolExecutor executorService;
     private final ProtocolManager protocolManager;
 
     private Map<UUID, UUID> legacyToNewUUIDMap;
@@ -68,7 +67,8 @@ public class PixelartManager {
     public final String BLACKLIST_FILENAME = "blacklist.yml";
 
     public PixelartManager(MilkyPixelart plugin) {
-        mapFileParserExecutor = Executors.newSingleThreadExecutor();
+        executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        executorService.setMaximumPoolSize(2);
 
         this.plugin = plugin;
 
@@ -245,7 +245,7 @@ public class PixelartManager {
         if (mapMeta.hasMapView()) {
             MapView mapView = mapMeta.getMapView();
 
-            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), mapFileParserExecutor).thenAccept(bytes -> {
+            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAccept(bytes -> {
                 try {
                     if (!mapMeta.getMapView().getRenderers().isEmpty()) {
 
@@ -406,7 +406,7 @@ public class PixelartManager {
         return legacyToNewUUIDMap.get(uuid);
     }
 
-    private void saveBlacklist() throws IOException {
+    private void saveBlacklist() {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
         fileConfiguration.set("blacklist", null);
         if (fileConfiguration != null) {
@@ -417,11 +417,15 @@ public class PixelartManager {
             }
             plugin.getLogger().info(ChatColor.GREEN+"Saved "+count+" blacklist entries into the savefile!");
         }
-        fileConfiguration.save(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
+        try {
+            fileConfiguration.save(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, e.getMessage(), e);
+        }
     }
 
     private void loadBlacklist() {
-        blackList = new HashMap<>();
+        blackList = new ConcurrentHashMap<>();
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
         if (fileConfiguration != null) {
             ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("blacklist");
@@ -438,10 +442,30 @@ public class PixelartManager {
 
     public void blacklistAdd(int mapId, UUID ownerUUID) {
         blackList.put(mapId, ownerUUID);
+        saveBlacklistAsync().thenAccept(exception -> {
+            if (exception != null)
+                plugin.getLogger().log(Level.WARNING, exception.getMessage(), exception);
+        });
     }
 
     public UUID blacklistRemove(int mapId) {
-        return blackList.remove(mapId);
+        UUID uuid = blackList.remove(mapId);
+        if (uuid != null)
+            saveBlacklistAsync().thenAccept(exception -> {
+                if (exception != null)
+                    plugin.getLogger().log(Level.WARNING, exception.getMessage(), exception);
+            });
+        return uuid;
+    }
+
+    private CompletableFuture<IOException> saveBlacklistAsync() {
+        plugin.getLogger().info(ChatColor.YELLOW+"Async save blacklist...");
+        CompletableFuture<IOException> completableFuture = new CompletableFuture();
+        executorService.submit(() -> {
+            saveBlacklist();
+            completableFuture.complete(null);
+        });
+        return completableFuture;
     }
 
     public ArrayList<Map.Entry<Integer, UUID>> blacklistList() {
@@ -487,10 +511,10 @@ public class PixelartManager {
         return true;
     }
 
-    public void shutdown() throws IOException, InterruptedException {
-        mapFileParserExecutor.shutdown();
-        unregisterListeners();
+    public void shutdown() throws InterruptedException {
         saveBlacklist();
-        mapFileParserExecutor.awaitTermination(5, TimeUnit.SECONDS);
+        executorService.shutdown();
+        unregisterListeners();
+        executorService.awaitTermination(5, TimeUnit.SECONDS);
     }
 }

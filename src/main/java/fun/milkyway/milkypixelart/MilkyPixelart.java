@@ -54,7 +54,7 @@ public final class MilkyPixelart extends JavaPlugin {
                 pixelartManager.shutdown();
                 pixelartManager = new PixelartManager(this);
                 result.complete(pixelartManager);
-            } catch (IOException | InterruptedException e) {
+            } catch (InterruptedException e) {
                 result.complete(null);
             }
         });
@@ -65,7 +65,7 @@ public final class MilkyPixelart extends JavaPlugin {
     public void onDisable() {
         try {
             pixelartManager.shutdown();
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             getLogger().log(Level.WARNING, e.getMessage(), e);
         }
     }
