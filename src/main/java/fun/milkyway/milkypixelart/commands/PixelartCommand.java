@@ -165,9 +165,12 @@ public class PixelartCommand extends BaseCommand {
         @CommandCompletion("номер_карты uuid_владельца")
         public void onAdd(Player player, Integer mapId, UUID uuid) {
             plugin.getPixelartManager().blacklistAdd(mapId, uuid);
-            player.sendMessage(
-                    Component.text("Карта "+mapId+" была добавлена в черный список с настоящим владельцем "+uuid)
-                            .color(TextColor.fromHexString("#9AFF0F")));
+            TextComponent.Builder builder = Component.text();
+            builder.append(Component.text("Карта ").color(TextColor.fromHexString("#FFFF99")))
+                    .append(Component.text(mapId).color(TextColor.fromHexString("#9AFF0F")))
+                    .append(Component.text(" была добавлена в черный список с настоящим владельцем ").color(TextColor.fromHexString("#FFFF99")))
+                    .append(Component.text(uuid.toString()).color(TextColor.fromHexString("#9AFF0F")));
+            player.sendMessage(builder.build());
         }
 
         @Subcommand("remove")
@@ -212,11 +215,11 @@ public class PixelartCommand extends BaseCommand {
                     builder.append(Component.text("X").color(TextColor.fromHexString("#FF995E"))
                             .hoverEvent(HoverEvent.showText(Component.text("Удалить").color(TextColor.fromHexString("#FF995E"))))
                             .clickEvent(ClickEvent.runCommand("/pixelart blacklist remove "+id)));
-                    builder.append(Component.text(" Карта ").color(TextColor.fromHexString("#FFFF99")));
+                    builder.append(Component.text(" - ").color(TextColor.fromHexString("#FFFF99")));
                     builder.append(Component.text(String.format("%08d ", id)).color(TextColor.fromHexString("#9AFF0F"))
                             .hoverEvent(HoverEvent.showText(Component.text("Номер карты").color(TextColor.fromHexString("#9AFF0F")))));
                     builder.append(Component.text(uuid).color(TextColor.fromHexString("#FFEA6D"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Скопировать").color(TextColor.fromHexString("#FFEA6D"))))
+                            .hoverEvent(HoverEvent.showText(Component.text("UUID законного владельца (скопировать)").color(TextColor.fromHexString("#FFEA6D"))))
                             .clickEvent(ClickEvent.copyToClipboard(uuid)));
                     builder.append(Component.newline());
                 }

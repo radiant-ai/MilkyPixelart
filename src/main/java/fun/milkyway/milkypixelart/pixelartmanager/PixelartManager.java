@@ -8,6 +8,7 @@ import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
+import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
 import fun.milkyway.milkypixelart.listeners.ProtectionListener;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
@@ -85,12 +86,15 @@ public class PixelartManager {
 
         Listener protectionListener = new ProtectionListener(this);
         Listener auctionPreviewListener = new AuctionPreviewListener(this);
+        Listener illegitimateArtListener = new IllegitimateArtListener(this);
 
         plugin.getServer().getPluginManager().registerEvents(protectionListener, plugin);
         plugin.getServer().getPluginManager().registerEvents(auctionPreviewListener, plugin);
+        plugin.getServer().getPluginManager().registerEvents(illegitimateArtListener, plugin);
 
         listeners.add(protectionListener);
         listeners.add(auctionPreviewListener);
+        listeners.add(illegitimateArtListener);
     }
 
     private void unregisterListeners() {
@@ -326,7 +330,7 @@ public class PixelartManager {
 
     public CompletableFuture<List<String>> getDuplicates(CommandSender commandSender, int mapId) {
 
-        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         CompletableFuture<List<String>> finalResult = new CompletableFuture<>();
 
         threadPoolExecutor.submit(() -> {
@@ -444,6 +448,17 @@ public class PixelartManager {
         return new ArrayList(blackList.entrySet().stream().toList());
     }
 
+    public boolean isLegitimateOwner(ItemStack map) {
+        UUID uuid = getAuthor(map);
+        MapView mapView = ((MapMeta) map.getItemMeta()).getMapView();
+
+        if (mapView == null) {
+            return true;
+        }
+
+        return isLegitimateOwner(mapView.getId(), uuid);
+    }
+
     public boolean isLegitimateOwner(int mapId, UUID testUUID) {
         UUID realOwner = blackList.get(mapId);
         if (realOwner != null) {
@@ -459,8 +474,8 @@ public class PixelartManager {
             }
 
             //owner used to be legitimate in past
-            UUID realOwnerLegacy = fromLegacyUUID(realOwner);
-            if (realOwnerLegacy != null && realOwnerLegacy.equals(testUUID)) {
+            UUID realOwnerFromLegacy = fromLegacyUUID(testUUID);
+            if (realOwnerFromLegacy != null && realOwnerFromLegacy.equals(realOwner)) {
                 return true;
             }
 
