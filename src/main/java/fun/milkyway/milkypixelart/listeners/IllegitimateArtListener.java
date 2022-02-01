@@ -2,8 +2,6 @@ package fun.milkyway.milkypixelart.listeners;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
 import fun.milkyway.milkypixelart.pixelartmanager.PixelartManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,7 +14,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.ListIterator;
 import java.util.Map;
 
 public class IllegitimateArtListener implements Listener {

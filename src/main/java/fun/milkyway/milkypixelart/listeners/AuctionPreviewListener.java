@@ -31,9 +31,8 @@ public class AuctionPreviewListener implements Listener {
                     || invName.contains("Поиск")
                     || invName.contains("Pixelart")
                     || invName.contains("Просмотр"))
-                    && event.getWhoClicked() instanceof Player) {
+                    && event.getWhoClicked() instanceof Player p) {
                 ItemStack stack = event.getCurrentItem();
-                Player p = (Player) event.getWhoClicked();
                 p.closeInventory();
                 pixelartManager.renderArtToUser(p, stack);
                 Location l = p.getLocation();
@@ -43,9 +42,6 @@ public class AuctionPreviewListener implements Listener {
                 p.sendMessage(Component.text("Вы предпросматриваете выбранный пиксельарт!").color(NamedTextColor.GREEN));
                 event.setCancelled(true);
             }
-//            else if (invName.contains("Просмотр")) {
-//
-//           }
         }
     }
 }

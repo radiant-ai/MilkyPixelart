@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
@@ -15,7 +14,6 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -24,7 +22,7 @@ import java.util.UUID;
 @CommandAlias("pixelart|pxt")
 public class PixelartCommand extends BaseCommand {
 
-    private MilkyPixelart plugin;
+    private final MilkyPixelart plugin;
 
     private final int PER_PAGE = 12;
 
@@ -90,7 +88,7 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("protect")
     public void onProtect(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item != null && item.getType()== Material.FILLED_MAP) {
+        if (item.getType()== Material.FILLED_MAP) {
             UUID uuid = plugin.getPixelartManager().getAuthor(item);
             if (uuid == null) {
                 int price = item.getAmount()*100;

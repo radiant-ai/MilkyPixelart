@@ -9,7 +9,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -44,11 +43,11 @@ public final class MilkyPixelart extends JavaPlugin {
             return false;
         }
         economy = rsp.getProvider();
-        return economy != null;
+        return true;
     }
 
     public CompletableFuture<PixelartManager> reloadPixeartManager() {
-        CompletableFuture<PixelartManager> result = new CompletableFuture();
+        CompletableFuture<PixelartManager> result = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 pixelartManager.shutdown();

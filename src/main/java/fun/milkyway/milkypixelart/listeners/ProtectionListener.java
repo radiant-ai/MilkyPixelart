@@ -23,8 +23,7 @@ public class ProtectionListener implements Listener {
     public void onPixelartCopy(PrepareItemCraftEvent e) {
         CraftingInventory inv = e.getInventory();
         InventoryHolder ih = inv.getHolder();
-        if (ih instanceof Player) {
-            Player p = (Player) ih;
+        if (ih instanceof Player p) {
             for (int i = 0; i<inv.getSize(); i++) {
                 ItemStack item = inv.getItem(i);
                 if (item != null && item.getType() == Material.FILLED_MAP) {
@@ -46,10 +45,9 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onPixelartCopy2(InventoryClickEvent e) {
-        if (e.getWhoClicked() instanceof Player ) {
-            Player p = (Player) e.getWhoClicked();
+        if (e.getWhoClicked() instanceof Player p) {
             Inventory inv = e.getInventory();
-            if (inv != null && inv.getType() == InventoryType.CARTOGRAPHY) {
+            if (inv.getType() == InventoryType.CARTOGRAPHY) {
                 if (e.getClick() == ClickType.NUMBER_KEY || e.getClick() == ClickType.SWAP_OFFHAND) {
                     e.setCancelled(true);
                     return;
@@ -80,10 +78,9 @@ public class ProtectionListener implements Listener {
 
     @EventHandler
     public void onPixelartCopy2(InventoryDragEvent e) {
-        if (e.getWhoClicked() instanceof Player ) {
-            Player p = (Player) e.getWhoClicked();
+        if (e.getWhoClicked() instanceof Player p) {
             Inventory inv = e.getInventory();
-            if (inv != null && (inv instanceof AnvilInventory || inv instanceof CartographyInventory)) {
+            if (inv instanceof AnvilInventory || inv instanceof CartographyInventory) {
                 if (e.getInventorySlots().contains(0) || e.getInventorySlots().contains(1)) {
                     ItemStack cursor = e.getOldCursor();
                     UUID author = pixelartManager.getAuthor(cursor);

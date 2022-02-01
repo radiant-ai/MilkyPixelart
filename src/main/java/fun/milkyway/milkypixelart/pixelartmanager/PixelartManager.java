@@ -40,7 +40,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -287,7 +286,7 @@ public class PixelartManager {
 
     public void killItemFrame(Player p, int id) {
         PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
-        pc.getIntLists().write(0, Arrays.asList(id));
+        pc.getIntLists().write(0, List.of(id));
         try {
             protocolManager.sendServerPacket(p, pc);
         } catch (InvocationTargetException e) {
@@ -345,7 +344,7 @@ public class PixelartManager {
                 commandSender.sendMessage(ChatColor.GREEN+"Найдено "+files.length+" файлов карт, начинаем поиск...");
 
                 AtomicInteger count = new AtomicInteger(0);
-                List<String> resultList = Collections.synchronizedList(new ArrayList());
+                List<String> resultList = Collections.synchronizedList(new ArrayList<>());
                 CompletableFuture[] tasks = new CompletableFuture[files.length];
 
                 for (int i = 0; i < files.length; i++) {
@@ -460,7 +459,7 @@ public class PixelartManager {
 
     private CompletableFuture<IOException> saveBlacklistAsync() {
         plugin.getLogger().info(ChatColor.YELLOW+"Async save blacklist...");
-        CompletableFuture<IOException> completableFuture = new CompletableFuture();
+        CompletableFuture<IOException> completableFuture = new CompletableFuture<>();
         executorService.submit(() -> {
             saveBlacklist();
             completableFuture.complete(null);
@@ -499,12 +498,7 @@ public class PixelartManager {
 
             //owner used to be legitimate in past
             UUID realOwnerFromLegacy = fromLegacyUUID(testUUID);
-            if (realOwnerFromLegacy != null && realOwnerFromLegacy.equals(realOwner)) {
-                return true;
-            }
-
-            //not legitimate
-            return false;
+            return realOwnerFromLegacy != null && realOwnerFromLegacy.equals(realOwner);
         }
 
         //not in the blacklist at all
