@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class IllegitimateArtListener implements Listener {
                 if (!pixelartManager.isLegitimateOwner(itemStack)) {
                     itemFrame.setItem(null);
                     pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+itemFrame.getLocation());
+                    pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Map id: "+((MapMeta) itemStack.getItemMeta()).getMapView().getId());
                 }
             }
         }
@@ -52,6 +54,7 @@ public class IllegitimateArtListener implements Listener {
                                 PlainTextComponentSerializer.plainText().serialize(event.getView().title()) +
                                 " of player "+player.getName());
                     }
+                    pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Map id: "+((MapMeta) entry.getValue().getItemMeta()).getMapView().getId());
                 }
             }
         }
