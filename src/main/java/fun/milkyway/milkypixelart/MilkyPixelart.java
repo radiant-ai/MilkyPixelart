@@ -4,34 +4,39 @@ import co.aikar.commands.Locales;
 import co.aikar.commands.PaperCommandManager;
 import fun.milkyway.milkypixelart.commands.ArgsResolver;
 import fun.milkyway.milkypixelart.commands.PixelartCommand;
-import fun.milkyway.milkypixelart.pixelartmanager.PixelartManager;
+import fun.milkyway.milkypixelart.managers.BannerManager;
+import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
+import org.jetbrains.annotations.NotNull;
 
 public final class MilkyPixelart extends JavaPlugin {
-    private PixelartManager pixelartManager;
+    private static MilkyPixelart instance;
     private PaperCommandManager paperCommandManager;
     private Economy economy;
 
     @Override
     public void onEnable() {
-        getDataFolder().mkdir();
+        instance = this;
+
+        if (getDataFolder().mkdir()) {
+            getLogger().info("Created data folder!");
+        }
 
         paperCommandManager = new PaperCommandManager(this);
         paperCommandManager.getLocales().setDefaultLocale(Locales.RUSSIAN);
         ArgsResolver.addResolvers(paperCommandManager);
-        paperCommandManager.registerCommand(new PixelartCommand(this));
+        paperCommandManager.registerCommand(new PixelartCommand());
 
         if (!setupEconomy()) {
             getLogger().severe("Economy not found, shutting down the server as it may cause big issues otherwise!");
             getServer().shutdown();
         }
-        pixelartManager = new PixelartManager(this);
+
+        //Inject managers
+        PixelartManager.getInstance();
+        BannerManager.getInstance();
     }
 
     private boolean setupEconomy() {
@@ -46,38 +51,17 @@ public final class MilkyPixelart extends JavaPlugin {
         return true;
     }
 
-    public CompletableFuture<PixelartManager> reloadPixeartManager() {
-        CompletableFuture<PixelartManager> result = new CompletableFuture<>();
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                pixelartManager.shutdown();
-                pixelartManager = new PixelartManager(this);
-                result.complete(pixelartManager);
-            } catch (InterruptedException e) {
-                result.complete(null);
-            }
-        });
-        return result;
-    }
-
     @Override
     public void onDisable() {
-        try {
-            pixelartManager.shutdown();
-        } catch (InterruptedException e) {
-            getLogger().log(Level.WARNING, e.getMessage(), e);
-        }
+        PixelartManager.getInstance().shutdown();
+        BannerManager.getInstance().shutdown();
     }
 
     public Economy getEconomy() {
         return economy;
     }
 
-    public PixelartManager getPixelartManager() {
-        return pixelartManager;
-    }
-
-    public PaperCommandManager getPaperCommandManager() {
-        return paperCommandManager;
+    public static @NotNull MilkyPixelart getInstance() {
+        return instance;
     }
 }

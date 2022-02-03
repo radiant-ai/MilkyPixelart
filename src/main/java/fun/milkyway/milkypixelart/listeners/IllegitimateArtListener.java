@@ -1,7 +1,8 @@
 package fun.milkyway.milkypixelart.listeners;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
-import fun.milkyway.milkypixelart.pixelartmanager.PixelartManager;
+import fun.milkyway.milkypixelart.MilkyPixelart;
+import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -12,28 +13,28 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.MapMeta;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class IllegitimateArtListener implements Listener {
-    private final PixelartManager pixelartManager;
+    private final MilkyPixelart plugin;
 
-    public IllegitimateArtListener(PixelartManager pixelartManager) {
-        this.pixelartManager = pixelartManager;
+    public IllegitimateArtListener() {
+        this.plugin = MilkyPixelart.getInstance();
     }
 
     @EventHandler
     public void onArtLoad(EntityAddToWorldEvent event) {
+        PixelartManager pixelartManager = PixelartManager.getInstance();
         Entity entity = event.getEntity();
         if (entity instanceof ItemFrame itemFrame) {
             ItemStack itemStack = itemFrame.getItem();
             if (itemStack.getType().equals(Material.FILLED_MAP)) {
                 if (!pixelartManager.isLegitimateOwner(itemStack)) {
                     itemFrame.setItem(null);
-                    pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+itemFrame.getLocation());
-                    pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Map id: "+((MapMeta) itemStack.getItemMeta()).getMapView().getId());
+                    MilkyPixelart.getInstance().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+itemFrame.getLocation());
+                    plugin.getLogger().info(ChatColor.DARK_GREEN+"Map id: "+pixelartManager.getMapId(itemStack));
                 }
             }
         }
@@ -41,20 +42,21 @@ public class IllegitimateArtListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onArtInventory(InventoryOpenEvent event) {
+        PixelartManager pixelartManager = PixelartManager.getInstance();
         if (event.getPlayer() instanceof Player player) {
             HashMap<Integer, ? extends ItemStack> map = event.getInventory().all(Material.FILLED_MAP);
             for (Map.Entry<Integer, ? extends ItemStack> entry : map.entrySet()) {
                 if (!pixelartManager.isLegitimateOwner(entry.getValue())) {
                     event.getInventory().clear(entry.getKey());
                     if (event.getInventory().getLocation() != null) {
-                        pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+event.getInventory().getLocation());
+                        plugin.getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+event.getInventory().getLocation());
                     }
                     else {
-                        pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate art from "+
+                        plugin.getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate art from "+
                                 PlainTextComponentSerializer.plainText().serialize(event.getView().title()) +
                                 " of player "+player.getName());
                     }
-                    pixelartManager.getPlugin().getLogger().info(ChatColor.DARK_GREEN+"Map id: "+((MapMeta) entry.getValue().getItemMeta()).getMapView().getId());
+                    plugin.getLogger().info(ChatColor.DARK_GREEN+"Map id: "+pixelartManager.getMapId(entry.getValue()));
                 }
             }
         }

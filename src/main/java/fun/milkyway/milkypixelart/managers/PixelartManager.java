@@ -1,19 +1,14 @@
-package fun.milkyway.milkypixelart.pixelartmanager;
+package fun.milkyway.milkypixelart.managers;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
-import fun.milkyway.milkypixelart.listeners.ProtectionListener;
+import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
 import fun.milkyway.milkypixelart.utils.Utils;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.querz.nbt.io.NBTUtil;
@@ -26,14 +21,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.*;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,155 +36,85 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
-public class PixelartManager {
-    private final MilkyPixelart plugin;
+public class PixelartManager extends ArtManager {
+    private static PixelartManager instance;
+
     private final Random random;
     private final ThreadPoolExecutor executorService;
     private final ProtocolManager protocolManager;
+    private final CopyrightManager copyrightManager;
 
     private Map<UUID, UUID> legacyToNewUUIDMap;
 
     private Map<Integer, UUID> blackList;
 
-    private List<Listener> listeners;
+    public static final String BLACKLIST_FILENAME = "blacklist.yml";
 
-    @SuppressWarnings("deprecation")
-    private final NamespacedKey copyrightKey = new NamespacedKey("survivaltweaks", "copyright");
+    //SIGNLETON
+    private PixelartManager() {
+        super();
 
-    public final String COPYRIGHT_STRING_LEGACY = "Copyrighted by";
-    public final String COPYRIGHT_STRING = "Защищено от копирования";
-    public final String PREFIX = "© ";
-
-    public final String BLACKLIST_FILENAME = "blacklist.yml";
-
-    public PixelartManager(MilkyPixelart plugin) {
         executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
         executorService.setMaximumPoolSize(2);
 
-        this.plugin = plugin;
-
         random = new Random();
         protocolManager = ProtocolLibrary.getProtocolManager();
+        copyrightManager = CopyrightManager.getInstance();
 
         initializeFixMap(new File(plugin.getDataFolder(), "replacementData.txt").getPath());
         loadBlacklist();
 
-        registerListeners();
+        registerListener(new PixelartProtectionListener());
+        registerListener(new AuctionPreviewListener());
+        registerListener(new IllegitimateArtListener());
     }
 
-    private void registerListeners() {
-        listeners = new LinkedList<>();
-
-        Listener protectionListener = new ProtectionListener(this);
-        Listener auctionPreviewListener = new AuctionPreviewListener(this);
-        Listener illegitimateArtListener = new IllegitimateArtListener(this);
-
-        plugin.getServer().getPluginManager().registerEvents(protectionListener, plugin);
-        plugin.getServer().getPluginManager().registerEvents(auctionPreviewListener, plugin);
-        plugin.getServer().getPluginManager().registerEvents(illegitimateArtListener, plugin);
-
-        listeners.add(protectionListener);
-        listeners.add(auctionPreviewListener);
-        listeners.add(illegitimateArtListener);
-    }
-
-    private void unregisterListeners() {
-        for (Listener listener : listeners) {
-            HandlerList.unregisterAll(listener);
+    public synchronized static @NotNull PixelartManager getInstance() {
+        if (instance == null) {
+            instance = new PixelartManager();
         }
+        return instance;
     }
 
-    public void protect(Player p, ItemStack map) {
-        UUID uuid = p.getUniqueId();
-        String name = p.getName();
-        protect(uuid, name, map);
+    public static CompletableFuture<PixelartManager> reload() {
+        CompletableFuture<PixelartManager> result = new CompletableFuture<>();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            getInstance().shutdown();
+            instance = new PixelartManager();
+            result.complete(getInstance());
+        });
+        return result;
     }
 
-    public boolean protect(UUID uuid, String name, ItemStack map) {
-        if (map != null && map.getType() == Material.FILLED_MAP) {
-            ItemMeta meta = map.getItemMeta();
-            MapMeta mapMeta = (MapMeta) meta;
-            PersistentDataContainer pdc = mapMeta.getPersistentDataContainer();
-            try {
-                pdc.set(copyrightKey, PersistentDataType.STRING, uuid.toString());
-                if (name != null) {
-                    List<Component> lore;
-                    if (mapMeta.hasLore()) {
-                        lore = mapMeta.lore();
-                    }
-                    else {
-                        lore = new ArrayList<>();
-                    }
-                    lore.add(Component.text()
-                            .append(Component.text(COPYRIGHT_STRING).color(TextColor.fromHexString("#FFFF99")).decoration(TextDecoration.ITALIC, false))
-                            .build());
-                    lore.add(Component.text()
-                            .append(Component.text(PREFIX).color(TextColor.fromHexString("#FFFF99")).decoration(TextDecoration.ITALIC, false))
-                            .append(Component.text(name).color(TextColor.fromHexString("#9AFF0F")).decoration(TextDecoration.ITALIC, false))
-                            .build());
-                    mapMeta.lore(lore);
-                }
-                mapMeta.getMapView().setLocked(true);
-                mapMeta.getMapView().setTrackingPosition(false);
-                mapMeta.getMapView().setUnlimitedTracking(false);
-                map.setItemMeta(mapMeta);
-                return true;
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+    @Override
+    public boolean protect(@NotNull Player player, @NotNull ItemStack map) {
+        if (ArtManager.isMap(map)) {
+            return copyrightManager.protect(player, map);
         }
         return false;
     }
 
-    public UUID getAuthor(ItemStack map) {
-        if (map != null && map.getType() == Material.FILLED_MAP) {
-            PersistentDataContainer pdc = map.getItemMeta().getPersistentDataContainer();
-            try {
-                if (pdc.has(copyrightKey, PersistentDataType.STRING)) {
-                    UUID uuid = UUID.fromString(pdc.get(copyrightKey, PersistentDataType.STRING));
-                    return uuid;
-                }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+    @Override
+    public boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack map) {
+        if (ArtManager.isMap(map)) {
+            return copyrightManager.protect(uuid, name, map);
         }
-        return null;
+        return false;
     }
 
-    public ItemStack getUnprotectedCopy(ItemStack map) {
-        ItemStack copy = map.clone();
-        if (map.getType() == Material.FILLED_MAP) {
-            ItemMeta meta = copy.getItemMeta();
-            PersistentDataContainer pdc = meta.getPersistentDataContainer();
-            try {
-                List<Component> lore;
-                if (meta.hasLore()) {
-                    lore = meta.lore();
-                }
-                else {
-                    lore = new ArrayList<>();
-                }
-                ListIterator<Component> iter = lore.listIterator();
-                while(iter.hasNext()){
-                    String line = PlainTextComponentSerializer.plainText().serialize(iter.next());
-                    if(line.contains(COPYRIGHT_STRING_LEGACY) || line.contains(COPYRIGHT_STRING)
-                            || line.contains(PREFIX)) {
-                        iter.remove();
-                    }
-                }
-                meta.lore(lore);
-                if (pdc.has(copyrightKey, PersistentDataType.STRING)) {
-                    pdc.remove(copyrightKey);
-                }
-                copy.setItemMeta(meta);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return copy;
+    @Override
+    public @Nullable UUID getAuthor(ItemStack map) {
+        return copyrightManager.getAuthor(map);
+    }
+
+    @Override
+    public @NotNull ItemStack getUnprotectedCopy(ItemStack map) {
+        return copyrightManager.getUnprotectedCopy(map);
+    }
+
+    @Override
+    public int getProtectionCost() {
+        return 100;
     }
 
     public void renderArtToUser(Player p, ItemStack is) {
@@ -206,7 +128,7 @@ public class PixelartManager {
         }
     }
 
-    public int createItemFrame(Player p, Location l) {
+    public int createItemFrame(@NotNull Player p, @NotNull Location l) {
         int direction = Utils.getDirection(l);
         int id = Integer.MAX_VALUE - random.nextInt() % 100000;
 
@@ -239,14 +161,20 @@ public class PixelartManager {
         return id;
     }
 
-    public void populateItemFrame(Player player, int id, ItemStack is) {
+    public void populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack is) {
         MapMeta mapMeta = (MapMeta) is.getItemMeta();
         if (mapMeta.hasMapView()) {
             MapView mapView = mapMeta.getMapView();
 
-            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAccept(bytes -> {
+            CompletableFuture.supplyAsync(() -> {
+                    if (mapView == null) {
+                        return null;
+                    }
+                    return getMapBytes(mapView.getId());
+                }, executorService).thenAccept(bytes -> {
                 try {
-                    if (!mapMeta.getMapView().getRenderers().isEmpty()) {
+                    if (mapView != null &&
+                            !mapView.getRenderers().isEmpty()) {
 
                         PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.ENTITY_METADATA);
                         pc.getIntegers().write(0, id);
@@ -280,11 +208,7 @@ public class PixelartManager {
         }
     }
 
-    public MilkyPixelart getPlugin() {
-        return plugin;
-    }
-
-    public void killItemFrame(Player p, int id) {
+    public void killItemFrame(@NotNull Player p, int id) {
         PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
         pc.getIntLists().write(0, List.of(id));
         try {
@@ -302,7 +226,7 @@ public class PixelartManager {
     }
 
 
-    private byte[] getMapBytesFromFile(File file) {
+    private byte[] getMapBytesFromFile(@NotNull File file) {
         if (!file.exists() || !file.canRead() || !file.isFile()) {
             return null;
         }
@@ -327,7 +251,7 @@ public class PixelartManager {
         return getMapBytesFromFile(mapFile);
     }
 
-    public CompletableFuture<List<String>> getDuplicates(CommandSender commandSender, int mapId) {
+    public CompletableFuture<List<String>> getDuplicates(@NotNull CommandSender commandSender, int mapId) {
 
         ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         CompletableFuture<List<String>> finalResult = new CompletableFuture<>();
@@ -341,36 +265,38 @@ public class PixelartManager {
                 File dataDirectory = getMapsDirectory();
                 File[] files = dataDirectory.listFiles();
 
-                commandSender.sendMessage(ChatColor.GREEN+"Найдено "+files.length+" файлов карт, начинаем поиск...");
+                if (files != null) {
+                    commandSender.sendMessage(ChatColor.GREEN+"Найдено "+files.length+" файлов карт, начинаем поиск...");
 
-                AtomicInteger count = new AtomicInteger(0);
-                List<String> resultList = Collections.synchronizedList(new ArrayList<>());
-                CompletableFuture[] tasks = new CompletableFuture[files.length];
+                    AtomicInteger count = new AtomicInteger(0);
+                    List<String> resultList = Collections.synchronizedList(new ArrayList<>());
+                    CompletableFuture[] tasks = new CompletableFuture[files.length];
 
-                for (int i = 0; i < files.length; i++) {
-                    File file = files[i];
-                    tasks[i] = CompletableFuture.runAsync(() -> {
-                        if (!file.getName().startsWith("map")) {
-                            return;
-                        }
-                        byte[] otherBytes = getMapBytesFromFile(file);
-                        int countUnboxed = count.getAndIncrement();
-                        if (otherBytes != null && Arrays.equals(originalBytes, otherBytes))
-                            resultList.add(file.getName());
-                        if (commandSender instanceof Player player) {
-                            if (plugin.getServer().getPlayer(player.getUniqueId()) != null &&
-                                    plugin.getServer().getPlayer(player.getUniqueId()).isOnline()) {
-                                if (countUnboxed % 2500 == 0) {
+                    for (int i = 0; i < files.length; i++) {
+                        File file = files[i];
+                        tasks[i] = CompletableFuture.runAsync(() -> {
+                            if (!file.getName().startsWith("map")) {
+                                return;
+                            }
+                            byte[] otherBytes = getMapBytesFromFile(file);
+                            int countUnboxed = count.getAndIncrement();
+                            if (otherBytes != null && Arrays.equals(originalBytes, otherBytes))
+                                resultList.add(file.getName());
+                            if (commandSender instanceof Player player) {
+                                Player freshPlayer = plugin.getServer().getPlayer(player.getUniqueId());
+                                if ( freshPlayer != null &&
+                                        freshPlayer.isOnline() &&
+                                        countUnboxed % 2500 == 0) {
                                     commandSender.sendMessage(ChatColor.GRAY+"Просмотрено "+ChatColor.WHITE+count+ChatColor.GRAY+" файлов карт!");
                                 }
                             }
-                        }
-                    }, threadPoolExecutor);
-                }
+                        }, threadPoolExecutor);
+                    }
 
-                CompletableFuture.allOf(tasks).thenRun(() -> {
-                    finalResult.complete(resultList);
-                });
+                    CompletableFuture.allOf(tasks).thenRun(() -> {
+                        finalResult.complete(resultList);
+                    });
+                }
 
             }
             else {
@@ -381,7 +307,7 @@ public class PixelartManager {
         return finalResult;
     }
 
-    private void initializeFixMap(String migrationFilePath) {
+    private void initializeFixMap(@NotNull String migrationFilePath) {
         legacyToNewUUIDMap = new HashMap<>();
         File entriesFile = new File(migrationFilePath);
         if (entriesFile.exists()) {
@@ -401,21 +327,21 @@ public class PixelartManager {
         }
     }
 
-    public UUID fromLegacyUUID(UUID uuid) {
+    public @Nullable UUID fromLegacyUUID(@NotNull UUID uuid) {
         return legacyToNewUUIDMap.get(uuid);
     }
 
     private void saveBlacklist() {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
         fileConfiguration.set("blacklist", null);
-        if (fileConfiguration != null) {
-            int count = 0;
-            for (Map.Entry<Integer, UUID> entry : blackList.entrySet()) {
-                fileConfiguration.set("blacklist."+entry.getKey(), entry.getValue().toString());
-                count++;
-            }
-            plugin.getLogger().info(ChatColor.GREEN+"Saved "+count+" blacklist entries into the savefile!");
+
+        int count = 0;
+        for (Map.Entry<Integer, UUID> entry : blackList.entrySet()) {
+            fileConfiguration.set("blacklist."+entry.getKey(), entry.getValue().toString());
+            count++;
         }
+        plugin.getLogger().info(ChatColor.GREEN+"Saved "+count+" blacklist entries into the savefile!");
+
         try {
             fileConfiguration.save(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
         } catch (IOException e) {
@@ -426,20 +352,22 @@ public class PixelartManager {
     private void loadBlacklist() {
         blackList = new ConcurrentHashMap<>();
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
-        if (fileConfiguration != null) {
-            ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("blacklist");
-            if (configurationSection != null) {
-                int count = 0;
-                for (String key : configurationSection.getKeys(false)) {
-                    blackList.put(Integer.parseInt(key), UUID.fromString(fileConfiguration.getString("blacklist."+key)));
+
+        ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("blacklist");
+        int count = 0;
+        if (configurationSection != null) {
+            for (String key : configurationSection.getKeys(false)) {
+                String uuidString = fileConfiguration.getString("blacklist."+key);
+                if (uuidString != null) {
+                    blackList.put(Integer.parseInt(key), UUID.fromString(uuidString));
                     count++;
                 }
-                plugin.getLogger().info(ChatColor.GREEN+"Loaded "+count+" blacklist entries from the savefile!");
             }
         }
+        plugin.getLogger().info(ChatColor.GREEN+"Loaded "+count+" blacklist entries from the savefile!");
     }
 
-    public void blacklistAdd(int mapId, UUID ownerUUID) {
+    public void blacklistAdd(int mapId, @NotNull UUID ownerUUID) {
         blackList.put(mapId, ownerUUID);
         saveBlacklistAsync().thenAccept(exception -> {
             if (exception != null)
@@ -447,7 +375,7 @@ public class PixelartManager {
         });
     }
 
-    public UUID blacklistRemove(int mapId) {
+    public @Nullable  UUID blacklistRemove(int mapId) {
         UUID uuid = blackList.remove(mapId);
         if (uuid != null)
             saveBlacklistAsync().thenAccept(exception -> {
@@ -467,12 +395,12 @@ public class PixelartManager {
         return completableFuture;
     }
 
-    public ArrayList<Map.Entry<Integer, UUID>> blacklistList() {
-        return new ArrayList(blackList.entrySet().stream().toList());
+    public @NotNull ArrayList<Map.Entry<Integer, UUID>> blacklistList() {
+        return new ArrayList<>(blackList.entrySet().stream().toList());
     }
 
-    public boolean isLegitimateOwner(ItemStack map) {
-        UUID uuid = getAuthor(map);
+    public boolean isLegitimateOwner(@NotNull ItemStack map) {
+        UUID uuid = copyrightManager.getAuthor(map);
         MapView mapView = ((MapMeta) map.getItemMeta()).getMapView();
 
         if (mapView == null) {
@@ -482,7 +410,7 @@ public class PixelartManager {
         return isLegitimateOwner(mapView.getId(), uuid);
     }
 
-    public boolean isLegitimateOwner(int mapId, UUID testUUID) {
+    public boolean isLegitimateOwner(int mapId, @Nullable UUID testUUID) {
         UUID realOwner = blackList.get(mapId);
         if (realOwner != null) {
 
@@ -505,10 +433,26 @@ public class PixelartManager {
         return true;
     }
 
-    public void shutdown() throws InterruptedException {
+    public int getMapId(@NotNull ItemStack itemStack) {
+        if (itemStack.getItemMeta() instanceof MapMeta mapMeta) {
+            if (mapMeta.getMapView() != null) {
+                return mapMeta.getMapView().getId();
+            }
+        }
+        return -1;
+    }
+
+    public void shutdown() {
         saveBlacklist();
         executorService.shutdown();
         unregisterListeners();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                plugin.getLogger().warning("Force terminated executor service after timeout!");
+            }
+        }
+        catch (InterruptedException exception) {
+            plugin.getLogger().log(Level.WARNING, "Executor shutdown was interrupted!", exception);
+        }
     }
 }

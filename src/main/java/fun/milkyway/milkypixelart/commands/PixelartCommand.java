@@ -3,6 +3,9 @@ package fun.milkyway.milkypixelart.commands;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import fun.milkyway.milkypixelart.MilkyPixelart;
+import fun.milkyway.milkypixelart.managers.ArtManager;
+import fun.milkyway.milkypixelart.managers.BannerManager;
+import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -10,7 +13,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,15 +21,14 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-@CommandAlias("pixelart|pxt")
+@SuppressWarnings("unused")
+@CommandAlias("pixelart|pxt|art")
 public class PixelartCommand extends BaseCommand {
 
     private final MilkyPixelart plugin;
 
-    private final int PER_PAGE = 12;
-
-    public PixelartCommand(MilkyPixelart plugin) {
-        this.plugin = plugin;
+    public PixelartCommand() {
+        this.plugin = MilkyPixelart.getInstance();
     }
 
     @Default
@@ -54,25 +55,55 @@ public class PixelartCommand extends BaseCommand {
                         Component.newline()
                 )
                 .append(
+                        Component.newline()
+                )
+                .append(
+                        Component.text("Плагин позволяет вам защищать ваши авторские баннеры и пиксельарты на картах. А также просматривать арты прямо на рынке.").color(TextColor.fromHexString("#CDCD6E")).decorate(TextDecoration.ITALIC)
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
                         Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
                 )
                 .append(
                         Component.newline()
                 )
                 .append(
-                        Component.text("/pixelart protect").color(TextColor.fromHexString("#9AFF0F"))
+                        Component.text("Стоимость защиты пиксельарта: ").color(TextColor.fromHexString("#FFFF99")).decorate(TextDecoration.ITALIC)
                 )
                 .append(
-                        Component.text("- защитить пиксельарт в руке (100$ за штуку), никто, кроме вас, не сможет скопировать ваш пиксельарт").color(TextColor.fromHexString("#FFFF99"))
+                        Component.text(PixelartManager.getInstance().getProtectionCost()+"$").color(TextColor.fromHexString("#9AFF0F")).decorate(TextDecoration.ITALIC)
                 )
                 .append(
                         Component.newline()
                 )
                 .append(
-                        Component.text("/pixelart fix").color(TextColor.fromHexString("#9AFF0F"))
+                        Component.text("Стоимость защиты баннера: ").color(TextColor.fromHexString("#FFFF99")).decorate(TextDecoration.ITALIC)
                 )
                 .append(
-                        Component.text("- исправить пиксельарт, если вы больше не можете его копировать после переноса базы данных").color(TextColor.fromHexString("#FFFF99"))
+                        Component.text(BannerManager.getInstance().getProtectionCost()+"$").color(TextColor.fromHexString("#9AFF0F")).decorate(TextDecoration.ITALIC)
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
+                        Component.text("/art protect").color(TextColor.fromHexString("#9AFF0F"))
+                )
+                .append(
+                        Component.text("- защитить предмет в руке, деньги будут списаны сразу и за все предметы").color(TextColor.fromHexString("#FFFF99"))
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
+                        Component.text("/art fix").color(TextColor.fromHexString("#9AFF0F"))
+                )
+                .append(
+                        Component.text("- исправить предмет, если вы больше не можете его копировать после переноса базы данных").color(TextColor.fromHexString("#FFFF99"))
                 )
                 .append(
                         Component.newline()
@@ -88,36 +119,48 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("protect")
     public void onProtect(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getType()== Material.FILLED_MAP) {
-            UUID uuid = plugin.getPixelartManager().getAuthor(item);
-            if (uuid == null) {
-                int price = item.getAmount()*100;
-                if (plugin.getEconomy().getBalance(player)>=price) {
-                    plugin.getPixelartManager().protect(player, item);
-                    plugin.getPixelartManager().getPlugin().getEconomy().withdrawPlayer(player, price);
+        ArtManager protectionManager;
+
+        if (ArtManager.isMap(item)) {
+            protectionManager = PixelartManager.getInstance();
+        }
+        else if (ArtManager.isBanner(item)) {
+            protectionManager = BannerManager.getInstance();
+        }
+        else {
+            player.sendMessage(Component.text("Вы должны держать пиксельарт или баннер в руке!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        UUID uuid = protectionManager.getAuthor(item);
+        if (uuid == null) {
+            int price = item.getAmount()*protectionManager.getProtectionCost();
+            if (plugin.getEconomy().getBalance(player)>=price) {
+                if (protectionManager.protect(player, item)) {
+                    plugin.getEconomy().withdrawPlayer(player, price);
                     player.sendMessage(
-                            Component.text("Вы защитили ваш пиксельарт! Денег списано: "+price+"$")
+                            Component.text("Вы защитили ваше творение! Денег списано: "+price+"$")
                                     .color(TextColor.fromHexString("#9AFF0F")));
                 }
                 else {
-                    player.sendMessage(
-                            Component.text("У вас недостаточно денег для установки защиты от копирования, вам нужно: "+price+"$")
-                                    .color(TextColor.fromHexString("#FF995E")));
+                    player.sendMessage(Component.text("Не удалось защитить предмет, на нём точно есть, что защищать?").color(TextColor.fromHexString("#FF995E")));
                 }
             }
             else {
-                player.sendMessage(Component.text("Эта карта уже защищена!").color(TextColor.fromHexString("#FF995E")));
+                player.sendMessage(
+                        Component.text("У вас недостаточно денег для установки защиты от копирования, вам нужно: "+price+"$")
+                                .color(TextColor.fromHexString("#FF995E")));
             }
         }
         else {
-            player.sendMessage(Component.text("Вы должны держать пиксельарт в руке!").color(TextColor.fromHexString("#FF995E")));
+            player.sendMessage(Component.text("Этот предмет уже защищен!").color(TextColor.fromHexString("#FF995E")));
         }
     }
 
     @CommandPermission("pixelart.findduplicated")
     @Subcommand("findduplicated")
     public void onFindDuplicates(CommandSender commandSender, Integer mapId) {
-        plugin.getPixelartManager().getDuplicates(commandSender, mapId).thenAccept(list -> {
+        PixelartManager.getInstance().getDuplicates(commandSender, mapId).thenAccept(list -> {
             commandSender.sendMessage(ChatColor.GREEN+"Найдено "+list.size()+" дубликатов:");
             for (String fileName : list) {
                commandSender.sendMessage(ChatColor.GRAY+""+fileName);
@@ -129,23 +172,23 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("fix")
     public void onFix(Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
-        UUID fromUUID = plugin.getPixelartManager().getAuthor(itemStack);
+        UUID fromUUID = PixelartManager.getInstance().getAuthor(itemStack);
         if (fromUUID != null) {
-            UUID toUUID = plugin.getPixelartManager().fromLegacyUUID(fromUUID);
+            UUID toUUID = PixelartManager.getInstance().fromLegacyUUID(fromUUID);
             if (toUUID != null) {
-                plugin.getPixelartManager().protect(toUUID, null, itemStack);
-                player.sendMessage(Component.text("Вы успешно исправили карту!").color(TextColor.fromHexString("#9AFF0F")));
+                PixelartManager.getInstance().protect(toUUID, null, itemStack);
+                player.sendMessage(Component.text("Вы успешно исправили защищенный предмет!").color(TextColor.fromHexString("#9AFF0F")));
                 return;
             }
         }
-        player.sendMessage(Component.text("Не удалось исправить карту!").color(TextColor.fromHexString("#FF995E")));
+        player.sendMessage(Component.text("Не удалось исправить защищенный предмет!").color(TextColor.fromHexString("#FF995E")));
     }
 
     @CommandPermission("pixelart.reload")
     @Subcommand("reload")
     public void onReload(Player player) {
         player.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
-        plugin.reloadPixeartManager().thenAcceptAsync(manager -> {
+        PixelartManager.reload().thenAcceptAsync(manager -> {
             if (manager != null) {
                 player.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
             }
@@ -162,7 +205,7 @@ public class PixelartCommand extends BaseCommand {
         @Subcommand("add")
         @CommandCompletion("номер_карты uuid_владельца")
         public void onAdd(Player player, Integer mapId, UUID uuid) {
-            plugin.getPixelartManager().blacklistAdd(mapId, uuid);
+            PixelartManager.getInstance().blacklistAdd(mapId, uuid);
             TextComponent.Builder builder = Component.text();
             builder.append(Component.text("Карта ").color(TextColor.fromHexString("#FFFF99")))
                     .append(Component.text(mapId).color(TextColor.fromHexString("#9AFF0F")))
@@ -174,7 +217,7 @@ public class PixelartCommand extends BaseCommand {
         @Subcommand("remove")
         @CommandCompletion("номер_карты")
         public void onRemove(Player player, Integer mapId) {
-            if (plugin.getPixelartManager().blacklistRemove(mapId) != null) {
+            if (PixelartManager.getInstance().blacklistRemove(mapId) != null) {
                 player.sendMessage(
                         Component.text("Карта "+mapId+" была удалена из черного списка")
                                 .color(TextColor.fromHexString("#9AFF0F")));
@@ -188,11 +231,12 @@ public class PixelartCommand extends BaseCommand {
         @CommandCompletion("страница")
         public void onList(Player player, @Default("1") Integer page) {
             page = page < 1 ? 1 : page;
-            ArrayList<Map.Entry<Integer, UUID>> list = plugin.getPixelartManager().blacklistList();
+            ArrayList<Map.Entry<Integer, UUID>> list = PixelartManager.getInstance().blacklistList();
             if (list.isEmpty()) {
                 player.sendMessage(Component.text("Черный список пуст").color(TextColor.fromHexString("#FFFF99")));
             }
             else {
+                int PER_PAGE = 12;
                 int pages = (list.size() - 1) / PER_PAGE + 1;
                 page = page > pages ? pages : page;
 

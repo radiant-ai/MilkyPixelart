@@ -1,6 +1,6 @@
 package fun.milkyway.milkypixelart.listeners;
 
-import fun.milkyway.milkypixelart.pixelartmanager.PixelartManager;
+import fun.milkyway.milkypixelart.managers.PixelartManager;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -14,17 +14,14 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class AuctionPreviewListener implements Listener {
-    private final PixelartManager pixelartManager;
-
-    public AuctionPreviewListener(PixelartManager pixelartManager) {
-        this.pixelartManager = pixelartManager;
-    }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onRightClick(InventoryClickEvent event) {
+        PixelartManager pixelartManager = PixelartManager.getInstance();
         if (event.getClick().isRightClick() &&
                 event.getClickedInventory() != null &&
                 event.getClickedInventory().getLocation() == null &&
+                event.getCurrentItem() != null &&
                 event.getCurrentItem().getType().equals(Material.FILLED_MAP)) {
             String invName = event.getView().title().toString();
             if ((invName.contains("Рынок")
