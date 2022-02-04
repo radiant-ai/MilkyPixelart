@@ -89,7 +89,8 @@ public class PixelartManager extends ArtManager {
     @Override
     public boolean protect(@NotNull Player player, @NotNull ItemStack map) {
         if (ArtManager.isMap(map)) {
-            return copyrightManager.protect(player, map);
+            copyrightManager.protect(player, map);
+            return true;
         }
         return false;
     }
@@ -97,13 +98,14 @@ public class PixelartManager extends ArtManager {
     @Override
     public boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack map) {
         if (ArtManager.isMap(map)) {
-            return copyrightManager.protect(uuid, name, map);
+            copyrightManager.protect(uuid, name, map);
+            return true;
         }
         return false;
     }
 
     @Override
-    public @Nullable UUID getAuthor(ItemStack map) {
+    public @Nullable CopyrightManager.Author getAuthor(ItemStack map) {
         return copyrightManager.getAuthor(map);
     }
 
@@ -400,32 +402,32 @@ public class PixelartManager extends ArtManager {
     }
 
     public boolean isLegitimateOwner(@NotNull ItemStack map) {
-        UUID uuid = copyrightManager.getAuthor(map);
+        CopyrightManager.Author author = copyrightManager.getAuthor(map);
         MapView mapView = ((MapMeta) map.getItemMeta()).getMapView();
 
         if (mapView == null) {
             return true;
         }
 
-        return isLegitimateOwner(mapView.getId(), uuid);
+        return isLegitimateOwner(mapView.getId(), author);
     }
 
-    public boolean isLegitimateOwner(int mapId, @Nullable UUID testUUID) {
+    public boolean isLegitimateOwner(int mapId, @Nullable CopyrightManager.Author author) {
         UUID realOwner = blackList.get(mapId);
         if (realOwner != null) {
 
             //no owner but in blacklist
-            if (testUUID == null) {
+            if (author == null) {
                 return false;
             }
 
             //this owner is legitimate
-            if (realOwner.equals(testUUID)) {
+            if (realOwner.equals(author.getUuid())) {
                 return true;
             }
 
             //owner used to be legitimate in past
-            UUID realOwnerFromLegacy = fromLegacyUUID(testUUID);
+            UUID realOwnerFromLegacy = fromLegacyUUID(author.getUuid());
             return realOwnerFromLegacy != null && realOwnerFromLegacy.equals(realOwner);
         }
 

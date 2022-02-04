@@ -42,7 +42,7 @@ public abstract class ArtManager {
 
     public abstract boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack);
 
-    public abstract @Nullable UUID getAuthor(ItemStack itemStack);
+    public abstract @Nullable CopyrightManager.Author getAuthor(ItemStack itemStack);
 
     public abstract @NotNull ItemStack getUnprotectedCopy(ItemStack itemStack);
 
@@ -52,6 +52,10 @@ public abstract class ArtManager {
 
     public static boolean isBanner(@Nullable ItemStack itemStack) {
         return itemStack != null && Tag.BANNERS.isTagged(itemStack.getType());
+    }
+
+    public static boolean isBanner(@Nullable Material material) {
+        return material != null && Tag.BANNERS.isTagged(material);
     }
 
     public static boolean isMap(@Nullable ItemStack itemStack) {

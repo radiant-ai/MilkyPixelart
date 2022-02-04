@@ -1,7 +1,9 @@
 package fun.milkyway.milkypixelart.listeners;
 
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
+import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.ArtManager;
+import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -15,7 +17,6 @@ import org.bukkit.inventory.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PixelartProtectionListener implements Listener {
 
@@ -28,7 +29,13 @@ public class PixelartProtectionListener implements Listener {
             if (filledMaps.stream().anyMatch(itemStack -> artManager.getAuthor(itemStack) != null)) {
                 player.sendMessage(Component.text("Работы с защищенными картами производятся только на столе картографа!")
                         .color(TextColor.fromHexString("#FF995E")));
-                player.closeInventory();
+                inventory.setResult(null);
+                MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                    Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
+                    if (newPlayer != null) {
+                        newPlayer.closeInventory();
+                    }
+                },1);
             }
         }
     }
@@ -43,17 +50,22 @@ public class PixelartProtectionListener implements Listener {
             ItemStack lowerSlot = cartographyInventory.getItem(1);
             if (lowerSlot != null
                     && lowerSlot.getType().equals(Material.MAP) && ArtManager.isMap(upperSlot)) {
-                UUID authorUUID = artManager.getAuthor(upperSlot);
-                if (authorUUID != null && authorUUID.equals(player.getUniqueId())) {
+                CopyrightManager.Author author = artManager.getAuthor(upperSlot);
+                if (author != null && author.getUuid().equals(player.getUniqueId())) {
                     ItemStack result = artManager.getUnprotectedCopy(upperSlot);
                     result.setAmount(2);
                     event.setResult(result);
-                    player.sendMessage(Component.text("Помните, копии защищенных артов не являются защищенными!").color(NamedTextColor.YELLOW));
+                    player.sendMessage(Component.text("Помните, копии защищенных артов не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
                 }
-                else if (authorUUID != null && !authorUUID.equals(player.getUniqueId())) {
+                else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);
                     player.sendMessage(Component.text("Вы не можете копировать чужие защищенные пиксельарты!").color(TextColor.fromHexString("#FF995E")));
-                    player.closeInventory();
+                    MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                        Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
+                        if (newPlayer != null) {
+                            newPlayer.closeInventory();
+                        }
+                    },1);
                 }
             }
         }

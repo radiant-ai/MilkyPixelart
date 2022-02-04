@@ -1,6 +1,7 @@
 package fun.milkyway.milkypixelart.managers;
 
 import fun.milkyway.milkypixelart.listeners.BannerProtectionListener;
+import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -27,7 +28,8 @@ public class BannerManager extends ArtManager {
     @Override
     public boolean protect(@NotNull Player player, @NotNull ItemStack itemStack) {
         if (ArtManager.isBanner(itemStack) && hasPatterns(itemStack)) {
-            return copyrightManager.protect(player, itemStack);
+            copyrightManager.protect(player, itemStack);
+            return true;
         }
         return false;
     }
@@ -35,14 +37,23 @@ public class BannerManager extends ArtManager {
     @Override
     public boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack) {
         if (ArtManager.isBanner(itemStack) && hasPatterns(itemStack)) {
-            return copyrightManager.protect(uuid, name, itemStack);
+            copyrightManager.protect(uuid, name, itemStack);
+            return true;
         }
         return false;
     }
 
+    public void protect(@NotNull UUID uuid, @Nullable String name, @NotNull Banner banner) {
+        copyrightManager.protect(uuid, name, banner);
+    }
+
     @Override
-    public @Nullable UUID getAuthor(ItemStack itemStack) {
+    public @Nullable CopyrightManager.Author getAuthor(ItemStack itemStack) {
         return copyrightManager.getAuthor(itemStack);
+    }
+
+    public @Nullable CopyrightManager.Author getAuthor(@NotNull Banner banner) {
+        return copyrightManager.getAuthor(banner);
     }
 
     @Override

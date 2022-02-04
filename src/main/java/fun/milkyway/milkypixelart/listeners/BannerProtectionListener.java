@@ -2,19 +2,22 @@ package fun.milkyway.milkypixelart.listeners;
 
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
+import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class BannerProtectionListener implements Listener {
 
@@ -27,17 +30,45 @@ public class BannerProtectionListener implements Listener {
             List<ItemStack> patternedBanners = getPatternedBannersFromCraft(inventory.getMatrix());
             if (clearBanners.size() == 1 && patternedBanners.size() == 1 &&
             clearBanners.get(0).getType().equals(patternedBanners.get(0).getType())) {
-                UUID author = artManager.getAuthor(patternedBanners.get(0));
+                CopyrightManager.Author author = artManager.getAuthor(patternedBanners.get(0));
                 if (author != null) {
-                    if (!author.equals(player.getUniqueId())) {
+                    if (!author.getUuid().equals(player.getUniqueId())) {
                         inventory.setResult(null);
                         player.sendMessage(Component.text("Вы не можете копировать чужие защищенные баннеры!").color(TextColor.fromHexString("#FF995E")));
                     }
                     else {
                         inventory.setResult(artManager.getUnprotectedCopy(patternedBanners.get(0)));
-                        player.sendMessage(Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(NamedTextColor.YELLOW));
+                        player.sendMessage(Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
                     }
                 }
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBannerBreak(BlockDropItemEvent event) {
+        if (event.getBlockState() instanceof Banner bannerState) {
+            BannerManager bannerManager = BannerManager.getInstance();
+            CopyrightManager.Author author = bannerManager.getAuthor(bannerState);
+            if (author != null) {
+                if (event.getItems().size() == 1) {
+                    ItemStack banner = event.getItems().get(0).getItemStack();
+                    bannerManager.protect(author.getUuid(), author.getName(), banner);
+                }
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onBannerPlace(BlockPlaceEvent blockPlaceEvent) {
+        if (ArtManager.isBanner(blockPlaceEvent.getBlock().getType())) {
+            BannerManager bannerManager = BannerManager.getInstance();
+            Banner banner = (Banner) blockPlaceEvent.getBlock().getState();
+            ItemStack itemStack = blockPlaceEvent.getItemInHand();
+            CopyrightManager.Author author = bannerManager.getAuthor(itemStack);
+            if (author != null) {
+                bannerManager.protect(author.getUuid(), author.getName(), banner);
+                banner.update();
             }
         }
     }

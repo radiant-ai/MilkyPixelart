@@ -12,6 +12,7 @@ import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,8 +23,24 @@ import java.util.ListIterator;
 import java.util.UUID;
 
 public class CopyrightManager {
+
+    public record Author(UUID uuid, String name) {
+
+        public @NotNull
+        UUID getUuid() {
+            return uuid;
+        }
+
+        public @Nullable
+        String getName() {
+            return name;
+        }
+    }
+
     @SuppressWarnings("deprecation")
     protected final NamespacedKey copyrightKey = new NamespacedKey("survivaltweaks", "copyright");
+    @SuppressWarnings("deprecation")
+    protected final NamespacedKey copyrightNameKey = new NamespacedKey("survivaltweaks", "copyrightname");
 
     protected static final String COPYRIGHT_STRING_LEGACY = "Copyrighted by";
     protected static final String COPYRIGHT_STRING = "Защищено от копирования";
@@ -43,20 +60,18 @@ public class CopyrightManager {
         return instance;
     }
 
-    protected boolean protect(@NotNull Player p, @NotNull ItemStack itemStack) {
+    protected void protect(@NotNull Player p, @NotNull ItemStack itemStack) {
         UUID uuid = p.getUniqueId();
         String name = p.getName();
-        return protect(uuid, name, itemStack);
+        protect(uuid, name, itemStack);
     }
 
-    protected boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack) {
+    protected void protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
 
-        applyPDCCopyright(itemMeta, uuid);
+        protect(uuid, name, itemMeta);
 
-        if (name != null) {
-            applyCopyrightLore(itemMeta, name);
-        }
+        applyCopyrightLore(itemMeta, name);
 
         if (itemMeta instanceof MapMeta mapMeta) {
             freezeMap(mapMeta);
@@ -66,11 +81,49 @@ public class CopyrightManager {
         }
 
         itemStack.setItemMeta(itemMeta);
-
-        return true;
     }
 
-    private void applyCopyrightLore(@NotNull ItemMeta itemMeta, @NotNull String name) {
+    protected void protect(@NotNull UUID uuid, @Nullable String name, @NotNull PersistentDataHolder persistentDataHolder) {
+        applyPDCCopyright(persistentDataHolder, uuid, name);
+    }
+
+    protected @Nullable Author getAuthor(@NotNull ItemStack itemStack) {
+        return getAuthor(itemStack.getItemMeta());
+    }
+
+    protected @Nullable Author getAuthor(@NotNull PersistentDataHolder persistentDataHolder) {
+        PersistentDataContainer pdc = persistentDataHolder.getPersistentDataContainer();
+        if (pdc.has(copyrightKey, PersistentDataType.STRING)) {
+            String stringUUID = pdc.get(copyrightKey, PersistentDataType.STRING);
+            if (stringUUID != null) {
+                String name = null;
+                if (pdc.has(copyrightNameKey, PersistentDataType.STRING)) {
+                    name = pdc.get(copyrightNameKey, PersistentDataType.STRING);
+                }
+                return new Author(UUID.fromString(stringUUID), name);
+            }
+        }
+        return null;
+    }
+
+    protected @NotNull ItemStack getUnprotectedCopy(@NotNull ItemStack itemStack) {
+        ItemStack copy = itemStack.clone();
+        ItemMeta itemMeta = copy.getItemMeta();
+
+        removePDCCopyright(itemMeta);
+        removeCopyrightLore(itemMeta);
+
+        if (itemMeta instanceof BannerMeta bannerMeta) {
+            showPatterns(bannerMeta);
+        }
+        copy.setItemMeta(itemMeta);
+
+        return copy;
+    }
+
+    private void applyCopyrightLore(@NotNull ItemMeta itemMeta, @Nullable String name) {
+        removeCopyrightLore(itemMeta);
+
         List<Component> lore;
         if (itemMeta.hasLore()) {
             lore = itemMeta.lore();
@@ -85,7 +138,7 @@ public class CopyrightManager {
                     .build());
             lore.add(Component.text()
                     .append(Component.text(PREFIX).color(TextColor.fromHexString("#FFFF99")).decoration(TextDecoration.ITALIC, false))
-                    .append(Component.text(name).color(TextColor.fromHexString("#9AFF0F")).decoration(TextDecoration.ITALIC, false))
+                    .append(Component.text(name == null ? "" : name).color(TextColor.fromHexString("#9AFF0F")).decoration(TextDecoration.ITALIC, false))
                     .build());
         }
 
@@ -116,15 +169,22 @@ public class CopyrightManager {
         itemMeta.lore(lore);
     }
 
-    private void applyPDCCopyright(@NotNull ItemMeta itemMeta, @NotNull UUID uuid) {
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+    private void applyPDCCopyright(@NotNull PersistentDataHolder persistentDataHolder, @NotNull UUID uuid, @Nullable String name) {
+        PersistentDataContainer pdc = persistentDataHolder.getPersistentDataContainer();
         pdc.set(copyrightKey, PersistentDataType.STRING, uuid.toString());
+
+        if (name != null) {
+            pdc.set(copyrightNameKey, PersistentDataType.STRING, name);
+        }
     }
 
-    private void removePDCCopyright(@NotNull ItemMeta itemMeta) {
-        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+    private void removePDCCopyright(@NotNull PersistentDataHolder persistentDataHolder) {
+        PersistentDataContainer pdc = persistentDataHolder.getPersistentDataContainer();
         if (pdc.has(copyrightKey, PersistentDataType.STRING)) {
             pdc.remove(copyrightKey);
+        }
+        if (pdc.has(copyrightNameKey, PersistentDataType.STRING)) {
+            pdc.remove(copyrightNameKey);
         }
     }
 
@@ -146,31 +206,5 @@ public class CopyrightManager {
         if (bannerMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
             bannerMeta.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         }
-    }
-
-    protected @Nullable UUID getAuthor(@NotNull ItemStack itemStack) {
-        PersistentDataContainer pdc = itemStack.getItemMeta().getPersistentDataContainer();
-        if (pdc.has(copyrightKey, PersistentDataType.STRING)) {
-            String stringUUID = pdc.get(copyrightKey, PersistentDataType.STRING);
-            if (stringUUID != null) {
-                return UUID.fromString(stringUUID);
-            }
-        }
-        return null;
-    }
-
-    protected @NotNull  ItemStack getUnprotectedCopy(@NotNull ItemStack itemStack) {
-        ItemStack copy = itemStack.clone();
-        ItemMeta itemMeta = copy.getItemMeta();
-
-        removePDCCopyright(itemMeta);
-        removeCopyrightLore(itemMeta);
-
-        if (itemMeta instanceof BannerMeta bannerMeta) {
-            showPatterns(bannerMeta);
-        }
-        copy.setItemMeta(itemMeta);
-
-        return copy;
     }
 }

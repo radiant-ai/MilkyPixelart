@@ -5,6 +5,7 @@ import co.aikar.commands.annotation.*;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
+import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -132,8 +133,8 @@ public class PixelartCommand extends BaseCommand {
             return;
         }
 
-        UUID uuid = protectionManager.getAuthor(item);
-        if (uuid == null) {
+        CopyrightManager.Author author = protectionManager.getAuthor(item);
+        if (author == null) {
             int price = item.getAmount()*protectionManager.getProtectionCost();
             if (plugin.getEconomy().getBalance(player)>=price) {
                 if (protectionManager.protect(player, item)) {
@@ -172,9 +173,9 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("fix")
     public void onFix(Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
-        UUID fromUUID = PixelartManager.getInstance().getAuthor(itemStack);
-        if (fromUUID != null) {
-            UUID toUUID = PixelartManager.getInstance().fromLegacyUUID(fromUUID);
+        CopyrightManager.Author author = PixelartManager.getInstance().getAuthor(itemStack);
+        if (author != null) {
+            UUID toUUID = PixelartManager.getInstance().fromLegacyUUID(author.getUuid());
             if (toUUID != null) {
                 PixelartManager.getInstance().protect(toUUID, null, itemStack);
                 player.sendMessage(Component.text("Вы успешно исправили защищенный предмет!").color(TextColor.fromHexString("#9AFF0F")));
