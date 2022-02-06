@@ -196,9 +196,9 @@ public class CopyrightManager {
         }
     }
 
-    private void hidePatterns(@NotNull BannerMeta bannerMeta) {
-        if (!bannerMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
-            bannerMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+    public void hidePatterns(@NotNull ItemMeta itemMeta) {
+        if (!itemMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
+            itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         }
     }
 
