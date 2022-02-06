@@ -43,7 +43,9 @@ public class BannerProtectionListener implements Listener {
                                 player.sendMessage(Component.text("Вы не можете копировать чужие защищенные баннеры!").color(TextColor.fromHexString("#FF995E")));
                             }
                             else {
-                                inventory.setResult(artManager.getUnprotectedCopy(copiedBanner));
+                                ItemStack result = artManager.getUnprotectedCopy(copiedBanner);
+                                copiedBanner.setAmount(1);
+                                inventory.setResult(result);
                                 player.sendMessage(Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
                             }
                         }
