@@ -3,8 +3,8 @@ package fun.milkyway.milkypixelart.listeners;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
+import fun.milkyway.milkypixelart.utils.MessageOnceManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.block.Banner;
@@ -13,16 +13,21 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BannerProtectionListener implements Listener {
+
+    private final MessageOnceManager messageOnceManager;
+
+    public BannerProtectionListener() {
+        messageOnceManager = new MessageOnceManager();
+    }
 
     @EventHandler
     public void onBannerCopy(PrepareItemCraftEvent event) {
@@ -31,35 +36,74 @@ public class BannerProtectionListener implements Listener {
             CraftingInventory inventory = event.getInventory();
             BannerCraftDetails bannerCraftDetails = bannerDuplicate(inventory.getMatrix());
             if (bannerCraftDetails.getPatternedBanners().size() == 1) {
-                ItemStack copiedBanner = bannerCraftDetails.getPatternedBanners().get(0);
+                ItemStack copiedBanner = bannerCraftDetails.getPatternedBanners().get(0).clone();
                 CopyrightManager.Author author = artManager.getAuthor(copiedBanner);
-                if (author != null) {
-                    //BANNER DUPLICATE RECIPE
-                    if (bannerCraftDetails.getClearBanners().size() == 1 && bannerCraftDetails.getOtherItems().size() == 0) {
-                        ItemStack clearbanner = bannerCraftDetails.getClearBanners().get(0);
-                        if (copiedBanner.getType().equals(clearbanner.getType())) {
-                            if (!author.getUuid().equals(player.getUniqueId())) {
-                                inventory.setResult(null);
-                                player.sendMessage(Component.text("Вы не можете копировать чужие защищенные баннеры!").color(TextColor.fromHexString("#FF995E")));
-                            }
-                            else {
-                                ItemStack result = artManager.getUnprotectedCopy(copiedBanner);
-                                copiedBanner.setAmount(1);
-                                inventory.setResult(result);
-                                player.sendMessage(Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
+                //BANNER DUPLICATE RECIPE
+                if (bannerCraftDetails.getClearBanners().size() == 1 && bannerCraftDetails.getOtherItems().size() == 0
+                        && bannerCraftDetails.getPatternedBanners().get(0).getAmount() == 1) {
+                    ItemStack clearbanner = bannerCraftDetails.getClearBanners().get(0).clone();
+                    if (copiedBanner.getType().equals(clearbanner.getType())) {
+                        if (author != null && !author.getUuid().equals(player.getUniqueId())) {
+                            inventory.setResult(null);
+                            player.sendMessage(Component.text("Вы не можете копировать чужие защищенные баннеры!").color(TextColor.fromHexString("#FF995E")));
+                        }
+                        else {
+                            ItemStack result = artManager.getUnprotectedCopy(copiedBanner);
+                            result.setAmount(1);
+                            inventory.setResult(result);
+                            if (author != null) {
+                                messageOnceManager.sendMessageOnce(player,
+                                        Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
                             }
                         }
                     }
-                    // SHIELD BANNER ATTACH RECIPE
-                    else if (bannerCraftDetails.getClearBanners().size() == 0 && bannerCraftDetails.getOtherItems().size() == 1 &&
-                            bannerCraftDetails.getOtherItems().get(0).getType().equals(Material.SHIELD)) {
-                        ItemStack shield = bannerCraftDetails.getOtherItems().get(0);
-                        if (!artManager.hasShieldPatterns(shield)) {
-                            ItemStack resultShield = artManager.applyBannerToShield(shield, copiedBanner);
+                }
+                // SHIELD BANNER ATTACH RECIPE
+                else if (bannerCraftDetails.getClearBanners().size() == 0 && bannerCraftDetails.getOtherItems().size() == 1 &&
+                        bannerCraftDetails.getOtherItems().get(0).getType().equals(Material.SHIELD)) {
+                    ItemStack shield = bannerCraftDetails.getOtherItems().get(0).clone();
+                    if (!artManager.hasShieldPatterns(shield)) {
+                        ItemStack resultShield = artManager.applyBannerToShield(shield, copiedBanner);
+                        if (author != null) {
                             artManager.hidePatterns(resultShield);
-                            inventory.setResult(resultShield);
+                        }
+                        inventory.setResult(resultShield);
+                    }
+                }
+                else {
+                    inventory.setResult(null);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBannerCopyOversize(InventoryClickEvent event) {
+        BannerManager artManager = BannerManager.getInstance();
+        if (event.getView().getTopInventory() instanceof CraftingInventory craftingInventory
+        && event.getSlotType().equals(InventoryType.SlotType.RESULT)
+        && event.getCurrentItem() != null
+        && ArtManager.isBanner(event.getCurrentItem())) {
+            ItemStack banner = event.getCurrentItem().clone();
+            if (artManager.patternNumber(banner) > 6) {
+                switch (event.getAction()) {
+                    case PICKUP_ALL, MOVE_TO_OTHER_INVENTORY -> {
+                        BannerCraftDetails craftDetails = bannerDuplicate(craftingInventory.getMatrix());
+                        if (craftDetails.getClearBanners().size() == 1 && craftDetails.getPatternedBanners().size() == 1 &&
+                        craftDetails.getOtherItems().size() == 0) {
+                            banner.setAmount(craftDetails.getClearBanners().get(0).getAmount());
+                            event.getView().setCursor(banner);
+                            ItemStack[] newMatrix = new ItemStack[craftingInventory.getMatrix().length];
+                            ItemStack patteredBanner = craftDetails.getPatternedBanners().get(0).clone();
+                            patteredBanner.setAmount(1);
+                            newMatrix[0] = patteredBanner;
+                            craftingInventory.setMatrix(newMatrix);
+                        }
+                        else {
+                            event.setCancelled(true);
                         }
                     }
+                    default -> event.setCancelled(true);
                 }
             }
         }
@@ -100,11 +144,11 @@ public class BannerProtectionListener implements Listener {
         for (ItemStack itemStack : itemStacks) {
             if (itemStack != null) {
                 if (ArtManager.isBanner(itemStack) &&
-                        !BannerManager.getInstance().hasPatterns(itemStack)) {
+                        BannerManager.getInstance().patternNumber(itemStack) == 0) {
                     clearBanners.add(itemStack);
                 }
                 else if (ArtManager.isBanner(itemStack) &&
-                        BannerManager.getInstance().hasPatterns(itemStack)) {
+                        BannerManager.getInstance().patternNumber(itemStack) > 0) {
                     patternedBanners.add(itemStack);
                 }
                 else if (!itemStack.getType().equals(Material.AIR)) {

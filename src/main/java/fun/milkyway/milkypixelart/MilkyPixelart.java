@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 public final class MilkyPixelart extends JavaPlugin {
     private static MilkyPixelart instance;
-    private PaperCommandManager paperCommandManager;
     private Economy economy;
 
     @Override
@@ -24,7 +23,7 @@ public final class MilkyPixelart extends JavaPlugin {
             getLogger().info("Created data folder!");
         }
 
-        paperCommandManager = new PaperCommandManager(this);
+        PaperCommandManager paperCommandManager = new PaperCommandManager(this);
         paperCommandManager.getLocales().setDefaultLocale(Locales.RUSSIAN);
         ArgsResolver.addResolvers(paperCommandManager);
         paperCommandManager.registerCommand(new PixelartCommand());

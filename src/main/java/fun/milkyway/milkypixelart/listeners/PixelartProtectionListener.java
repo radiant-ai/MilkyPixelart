@@ -5,8 +5,8 @@ import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
+import fun.milkyway.milkypixelart.utils.MessageOnceManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,6 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PixelartProtectionListener implements Listener {
+
+    private final MessageOnceManager messageOnceManager;
+
+    public PixelartProtectionListener() {
+        messageOnceManager = new MessageOnceManager();
+    }
 
     @EventHandler
     public void onPixelartCopyWorkbench(PrepareItemCraftEvent event) {
@@ -53,9 +59,10 @@ public class PixelartProtectionListener implements Listener {
                 CopyrightManager.Author author = artManager.getAuthor(upperSlot);
                 if (author != null && author.getUuid().equals(player.getUniqueId())) {
                     ItemStack result = artManager.getUnprotectedCopy(upperSlot);
-                    result.setAmount(2);
+                    result.setAmount(1);
                     event.setResult(result);
-                    player.sendMessage(Component.text("Помните, копии защищенных артов не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
+                    messageOnceManager.sendMessageOnce(player,
+                            Component.text("Помните, копии защищенных артов не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
                 }
                 else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);

@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -172,6 +173,8 @@ public class CopyrightManager {
     private void applyPDCCopyright(@NotNull PersistentDataHolder persistentDataHolder, @NotNull UUID uuid, @Nullable String name) {
         PersistentDataContainer pdc = persistentDataHolder.getPersistentDataContainer();
         pdc.set(copyrightKey, PersistentDataType.STRING, uuid.toString());
+
+        name = name == null ? Bukkit.getOfflinePlayer(uuid).getName() : name;
 
         if (name != null) {
             pdc.set(copyrightNameKey, PersistentDataType.STRING, name);
