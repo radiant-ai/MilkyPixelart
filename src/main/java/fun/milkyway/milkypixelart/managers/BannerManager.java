@@ -136,43 +136,48 @@ public class BannerManager extends ArtManager {
 
     public void handleMenuClick(@NotNull InventoryClickEvent event) {
         Block block = bannerEditorMenus.get(event.getView());
-        if (block != null && ArtManager.isBanner(block.getType())) {
-            try {
-                if (!(event.getClickedInventory() instanceof PlayerInventory)) {
-                    ItemStack itemStack = event.getCurrentItem();
-                    if (itemStack != null) {
-                        Pattern pattern = BannerUtils.getPatternFromBannerItem(itemStack);
-                        if (pattern != null && event.getView().getPlayer() instanceof Player player) {
-                            Material requiredDye = BannerUtils.getDyeMaterial(pattern.getColor());
-                            if (block.getState() instanceof Banner banner) {
-                                CopyrightManager.Author author = getAuthor(banner);
-                                if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-                                    player.sendMessage(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
-                                }
-                                else {
-                                    if (player.getInventory().contains(requiredDye)) {
-                                        if (addPatternToBanner(block, pattern)) {
-                                            player.sendMessage(Component.text("Узор добавлен.").color(TextColor.fromHexString("#9AFF0F")));
-                                            player.getInventory().removeItem(new ItemStack(requiredDye, 1));
-                                        }
-                                        else {
-                                            player.sendMessage(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
-                                        }
+        if (block != null && event.getView().getPlayer() instanceof Player player) {
+            if (ArtManager.isBanner(block.getType())) {
+                try {
+                    if (!(event.getClickedInventory() instanceof PlayerInventory)) {
+                        ItemStack itemStack = event.getCurrentItem();
+                        if (itemStack != null) {
+                            Pattern pattern = BannerUtils.getPatternFromBannerItem(itemStack);
+                            if (pattern != null) {
+                                Material requiredDye = BannerUtils.getDyeMaterial(pattern.getColor());
+                                if (block.getState() instanceof Banner banner) {
+                                    CopyrightManager.Author author = getAuthor(banner);
+                                    if (author != null && !author.getUuid().equals(player.getUniqueId())) {
+                                        player.sendMessage(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
                                     }
                                     else {
-                                        player.sendMessage(Component.text("У вас не оказалось нужной краски!").color(TextColor.fromHexString("#FF995E")));
+                                        if (player.getInventory().contains(requiredDye)) {
+                                            if (addPatternToBanner(block, pattern)) {
+                                                player.sendMessage(Component.text("Узор добавлен.").color(TextColor.fromHexString("#9AFF0F")));
+                                                player.getInventory().removeItem(new ItemStack(requiredDye, 1));
+                                            }
+                                            else {
+                                                player.sendMessage(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
+                                            }
+                                        }
+                                        else {
+                                            player.sendMessage(Component.text("У вас не оказалось нужной краски!").color(TextColor.fromHexString("#FF995E")));
+                                        }
                                     }
                                 }
                             }
-                            player.closeInventory();
                         }
                     }
                 }
+                catch (Exception exception) {
+                    plugin.getLogger().log(Level.WARNING, exception.getMessage(), exception);
+                }
             }
-            catch (Exception exception) {
-                plugin.getLogger().log(Level.WARNING, exception.getMessage(), exception);
+            else {
+                player.sendMessage(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
             }
             event.setCancelled(true);
+            player.closeInventory();
         }
     }
 

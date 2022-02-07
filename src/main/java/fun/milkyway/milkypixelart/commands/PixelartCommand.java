@@ -35,7 +35,7 @@ public class PixelartCommand extends BaseCommand {
     @Default
     @CatchUnknown
     @Subcommand("help")
-    public void onHelpCommand(Player player) {
+    public void onHelpCommand(CommandSender commandSender) {
         Component component = Component.text()
                 .append(
                         Component.newline()
@@ -113,7 +113,7 @@ public class PixelartCommand extends BaseCommand {
                         Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
                 )
                 .build();
-        player.sendMessage(component);
+        commandSender.sendMessage(component);
     }
 
     @CommandPermission("pixelart.protect")
@@ -187,14 +187,14 @@ public class PixelartCommand extends BaseCommand {
 
     @CommandPermission("pixelart.reload")
     @Subcommand("reload")
-    public void onReload(Player player) {
-        player.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
+    public void onReload(CommandSender commandSender) {
+        commandSender.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
         PixelartManager.reload().thenAcceptAsync(manager -> {
             if (manager != null) {
-                player.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
+                commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
             }
             else {
-                player.sendMessage(Component.text("Ошибка перезагрузки, срочно проверьте консоль!").color(TextColor.fromHexString("#FF995E")));
+                commandSender.sendMessage(Component.text("Ошибка перезагрузки, срочно проверьте консоль!").color(TextColor.fromHexString("#FF995E")));
             }
         });
     }
@@ -205,43 +205,43 @@ public class PixelartCommand extends BaseCommand {
 
         @Subcommand("add")
         @CommandCompletion("номер_карты uuid_владельца")
-        public void onAdd(Player player, Integer mapId, UUID uuid) {
+        public void onAdd(CommandSender commandSender, Integer mapId, UUID uuid) {
             PixelartManager.getInstance().blacklistAdd(mapId, uuid);
             TextComponent.Builder builder = Component.text();
             builder.append(Component.text("Карта ").color(TextColor.fromHexString("#FFFF99")))
                     .append(Component.text(mapId).color(TextColor.fromHexString("#9AFF0F")))
                     .append(Component.text(" была добавлена в черный список с настоящим владельцем ").color(TextColor.fromHexString("#FFFF99")))
                     .append(Component.text(uuid.toString()).color(TextColor.fromHexString("#9AFF0F")));
-            player.sendMessage(builder.build());
+            commandSender.sendMessage(builder.build());
         }
 
         @Subcommand("remove")
         @CommandCompletion("номер_карты")
-        public void onRemove(Player player, Integer mapId) {
+        public void onRemove(CommandSender commandSender, Integer mapId) {
             if (PixelartManager.getInstance().blacklistRemove(mapId) != null) {
-                player.sendMessage(
+                commandSender.sendMessage(
                         Component.text("Карта "+mapId+" была удалена из черного списка")
                                 .color(TextColor.fromHexString("#9AFF0F")));
             }
             else {
-                player.sendMessage(Component.text("Эта карта не в черном списке!").color(TextColor.fromHexString("#FF995E")));
+                commandSender.sendMessage(Component.text("Эта карта не в черном списке!").color(TextColor.fromHexString("#FF995E")));
             }
         }
 
         @Subcommand("list")
         @CommandCompletion("страница")
-        public void onList(Player player, @Default("1") Integer page) {
+        public void onList(CommandSender commandSender, @Default("1") Integer page) {
             page = page < 1 ? 1 : page;
             ArrayList<Map.Entry<Integer, UUID>> list = PixelartManager.getInstance().blacklistList();
             if (list.isEmpty()) {
-                player.sendMessage(Component.text("Черный список пуст").color(TextColor.fromHexString("#FFFF99")));
+                commandSender.sendMessage(Component.text("Черный список пуст").color(TextColor.fromHexString("#FFFF99")));
             }
             else {
                 int PER_PAGE = 12;
                 int pages = (list.size() - 1) / PER_PAGE + 1;
                 page = page > pages ? pages : page;
 
-                player.sendMessage(Component.text()
+                commandSender.sendMessage(Component.text()
                         .append(Component.newline())
                         .append(Component.text("Черный список: ").color(TextColor.fromHexString("#FFFF99"))
                                 .decorate(TextDecoration.BOLD))
@@ -266,7 +266,7 @@ public class PixelartCommand extends BaseCommand {
                             .clickEvent(ClickEvent.copyToClipboard(uuid)));
                     builder.append(Component.newline());
                 }
-                player.sendMessage(builder.build());
+                commandSender.sendMessage(builder.build());
 
                 builder = Component.text();
                 builder.append(Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99")));
@@ -278,7 +278,7 @@ public class PixelartCommand extends BaseCommand {
                         .append(Component.text(pages).color(TextColor.fromHexString("#FFFF99")));
                 builder.append(Component.text(" >>>> ").color(TextColor.fromHexString("#9AFF0F"))
                         .clickEvent(ClickEvent.runCommand("/pixelart blacklist list "+(page + 1))));
-                player.sendMessage(builder.build());
+                commandSender.sendMessage(builder.build());
             }
         }
     }
