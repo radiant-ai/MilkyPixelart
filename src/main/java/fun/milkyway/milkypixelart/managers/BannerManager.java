@@ -4,6 +4,8 @@ import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.BannerPaintListener;
 import fun.milkyway.milkypixelart.listeners.BannerProtectionListener;
 import fun.milkyway.milkypixelart.utils.BannerUtils;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -148,20 +150,21 @@ public class BannerManager extends ArtManager {
                                 if (block.getState() instanceof Banner banner) {
                                     CopyrightManager.Author author = getAuthor(banner);
                                     if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-                                        player.sendMessage(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
+                                        player.sendActionBar(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
                                     }
                                     else {
                                         if (player.getInventory().contains(requiredDye)) {
                                             if (addPatternToBanner(block, pattern)) {
-                                                player.sendMessage(Component.text("Узор добавлен.").color(TextColor.fromHexString("#9AFF0F")));
+                                                player.playSound(Sound.sound(Key.key(Key.MINECRAFT_NAMESPACE, "block.composter.empty"), Sound.Source.BLOCK, 0.5f, 1.0f));
+                                                player.sendActionBar(Component.text("Узор добавлен.").color(TextColor.fromHexString("#9AFF0F")));
                                                 player.getInventory().removeItem(new ItemStack(requiredDye, 1));
                                             }
                                             else {
-                                                player.sendMessage(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
+                                                player.sendActionBar(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
                                             }
                                         }
                                         else {
-                                            player.sendMessage(Component.text("У вас не оказалось нужной краски!").color(TextColor.fromHexString("#FF995E")));
+                                            player.sendActionBar(Component.text("У вас не оказалось нужной краски!").color(TextColor.fromHexString("#FF995E")));
                                         }
                                     }
                                 }
@@ -174,7 +177,7 @@ public class BannerManager extends ArtManager {
                 }
             }
             else {
-                player.sendMessage(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
+                player.sendActionBar(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
             }
             event.setCancelled(true);
             player.closeInventory();
@@ -190,6 +193,19 @@ public class BannerManager extends ArtManager {
             if (bannerState.numberOfPatterns() < 16) {
                 List<Pattern> patternList = bannerState.getPatterns();
                 patternList.add(pattern);
+                bannerState.setPatterns(patternList);
+                bannerState.update();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean eraseTopPattern(@NotNull Block block) {
+        if (block.getState() instanceof Banner bannerState) {
+            if (bannerState.numberOfPatterns() > 0) {
+                List<Pattern> patternList = bannerState.getPatterns();
+                patternList.remove(patternList.size()-1);
                 bannerState.setPatterns(patternList);
                 bannerState.update();
                 return true;

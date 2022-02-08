@@ -65,6 +65,12 @@ public class PixelartCommand extends BaseCommand {
                         Component.newline()
                 )
                 .append(
+                        Component.text("Также вы можете добавлять до 16 дополнительных узоров на баннеры нажав на них ПКМ и держа нужную краску в руках.").color(TextColor.fromHexString("#CDCD6E")).decorate(TextDecoration.ITALIC)
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
                         Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
                 )
                 .append(

@@ -5,6 +5,8 @@ import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.utils.BannerUtils;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
@@ -20,6 +22,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,36 +36,87 @@ public class BannerPaintListener implements Listener {
     @EventHandler
     public void onBannerPaint(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        if (event.getHand() != null && event.getHand().equals(EquipmentSlot.HAND) &&
-                event.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
-            !player.isSneaking()) {
-            Block block = event.getClickedBlock();
-            if (block != null && ArtManager.isBanner(block.getType())) {
-                DyeColor dyeColor = getDyeColorInHands(event.getPlayer());
-                if (dyeColor != null) {
-                    if (isLoomNearby(block) || hasLoom(player)) {
-                        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
-                        Bukkit.getServer().getPluginManager().callEvent(blockBreakEvent);
-                        if (!blockBreakEvent.isCancelled()) {
-                            CopyrightManager.Author author = BannerManager.getInstance().getAuthor(block);
-                            if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-                                player.sendMessage(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
-                            }
-                            else {
-                                BannerManager.getInstance().showPatternMenu(player, block, dyeColor);
-                            }
-                        }
-                        else {
-                            player.sendMessage(Component.text("Вы не можете редактировать баннер тут!").color(TextColor.fromHexString("#FF995E")));
-                        }
-                        event.setCancelled(false);
-                    }
-                    else {
-                        player.sendMessage(Component.text("Вы должны делать это у ткацкого станка или иметь один у себя в инвертаре!").color(TextColor.fromHexString("#FF995E")));
-                    }
-                }
-            }
+
+        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) ||
+                !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            return;
         }
+
+        Block block = event.getClickedBlock();
+
+        if (block == null || !ArtManager.isBanner(block.getType())) {
+            return;
+        }
+
+        DyeColor dyeColor = getDyeColorInHands(event.getPlayer());
+
+        if (dyeColor == null) {
+            return;
+        }
+
+        event.setCancelled(false);
+
+        if (!isLoomNearby(block) && !hasLoom(player)) {
+            player.sendActionBar(Component.text("Вы должны делать это у ткацкого станка или иметь один у себя в инвертаре!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        if (!hasBlockAccess(block, player)) {
+            player.sendActionBar(Component.text("Вы не можете редактировать баннер тут!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        CopyrightManager.Author author = BannerManager.getInstance().getAuthor(block);
+
+        if (author != null && !author.getUuid().equals(player.getUniqueId())) {
+            player.sendActionBar(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        BannerManager.getInstance().showPatternMenu(player, block, dyeColor);
+    }
+
+    @EventHandler
+    public void onBannerErase(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+
+        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) ||
+                !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+
+        if (block == null || !ArtManager.isBanner(block.getType())) {
+            return;
+        }
+
+        if (!hasPhantomMembrane(player)) {
+            return;
+        }
+
+        event.setCancelled(false);
+
+        if (!hasBlockAccess(block, player)) {
+            player.sendActionBar(Component.text("Вы не можете редактировать баннер тут!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        CopyrightManager.Author author = BannerManager.getInstance().getAuthor(block);
+
+        if (author != null && !author.getUuid().equals(player.getUniqueId())) {
+            player.sendActionBar(Component.text("Вы не можете убирать узоры на чужих баннерах!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        if (!BannerManager.getInstance().eraseTopPattern(block)) {
+            player.sendActionBar(Component.text("Тут нечего очищать!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+
+        player.sendActionBar(Component.text("Узор очищен.").color(TextColor.fromHexString("#9AFF0F")));
+        player.playSound(Sound.sound(Key.key(Key.MINECRAFT_NAMESPACE, "block.composter.ready"), Sound.Source.BLOCK, 0.5f, 1.2f));
+        player.getInventory().removeItem(new ItemStack(Material.PHANTOM_MEMBRANE, 1));
     }
 
     @EventHandler
@@ -74,6 +128,11 @@ public class BannerPaintListener implements Listener {
         DyeColor result = BannerUtils.getDyeColorFromItemStack(player.getInventory().getItemInMainHand());
         result = result == null ? BannerUtils.getDyeColorFromItemStack(player.getInventory().getItemInOffHand()) : result;
         return result;
+    }
+
+    private boolean hasPhantomMembrane(@NotNull Player player) {
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
+        return itemStack.getType().equals(Material.PHANTOM_MEMBRANE);
     }
 
     private boolean isLoomNearby(@NotNull Block bannerBlock) {
@@ -95,5 +154,11 @@ public class BannerPaintListener implements Listener {
 
     private boolean hasLoom(@NotNull Player player) {
         return player.getInventory().contains(Material.LOOM) || player.hasPermission("milkypixelart.bypassloom");
+    }
+
+    private boolean hasBlockAccess(@NotNull Block block, @NotNull Player player) {
+        BlockBreakEvent blockBreakEvent = new BlockBreakEvent(block, player);
+        Bukkit.getServer().getPluginManager().callEvent(blockBreakEvent);
+        return !blockBreakEvent.isCancelled();
     }
 }

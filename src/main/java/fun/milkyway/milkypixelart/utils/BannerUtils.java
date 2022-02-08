@@ -119,10 +119,13 @@ public class BannerUtils {
         List<Component> bookLore = new ArrayList<>();
         bookLore.add(Component.text("В этом меню вы можете добавлять до").color(TextColor.fromHexString("#FFFF99")));
         bookLore.add(Component.text("16 узоров на выбранный вами баннер.").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.text("").color(TextColor.fromHexString("#FFFF99")));
+        bookLore.add(Component.empty());
         bookLore.add(Component.text("Не видите особые узоры по типу черепа?").color(TextColor.fromHexString("#FFFF99")));
         bookLore.add(Component.text("Вам необходимо иметь их в инвератаре,").color(TextColor.fromHexString("#FFFF99")));
         bookLore.add(Component.text("чтобы они появились в меню узоров.").color(TextColor.fromHexString("#FFFF99")));
+        bookLore.add(Component.empty());
+        bookLore.add(Component.text("Вы также можете очищать верхний").color(TextColor.fromHexString("#FFFF99")));
+        bookLore.add(Component.text("слой с помощью мембран фантомов.").color(TextColor.fromHexString("#FFFF99")));
         bookMeta.lore(bookLore);
         infoBook.setItemMeta(bookMeta);
         return infoBook;

@@ -28,15 +28,15 @@ public class AuctionPreviewListener implements Listener {
                     || invName.contains("Поиск")
                     || invName.contains("Pixelart")
                     || invName.contains("Просмотр"))
-                    && event.getWhoClicked() instanceof Player p) {
+                    && event.getWhoClicked() instanceof Player player) {
                 ItemStack stack = event.getCurrentItem();
-                p.closeInventory();
-                pixelartManager.renderArtToUser(p, stack);
-                Location l = p.getLocation();
+                player.closeInventory();
+                pixelartManager.renderArtToUser(player, stack);
+                Location l = player.getLocation();
                 l.setPitch(0);
                 l.setYaw(Utils.alignYaw(l));
-                p.teleport(l);
-                p.sendMessage(Component.text("Вы предпросматриваете выбранный пиксельарт!").color(NamedTextColor.GREEN));
+                player.teleport(l);
+                player.sendActionBar(Component.text("Включен предпросмотр!").color(NamedTextColor.GREEN));
                 event.setCancelled(true);
             }
         }

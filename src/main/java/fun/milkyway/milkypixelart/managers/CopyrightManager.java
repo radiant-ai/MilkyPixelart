@@ -165,6 +165,9 @@ public class CopyrightManager {
                     iterator.remove();
                 }
             }
+            if (lore.size() == 0) {
+                lore = null;
+            }
         }
 
         itemMeta.lore(lore);
