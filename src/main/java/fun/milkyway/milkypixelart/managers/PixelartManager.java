@@ -1,8 +1,6 @@
 package fun.milkyway.milkypixelart.managers;
 
 import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
@@ -41,7 +39,6 @@ public class PixelartManager extends ArtManager {
 
     private final Random random;
     private final ThreadPoolExecutor executorService;
-    private final ProtocolManager protocolManager;
     private final CopyrightManager copyrightManager;
 
     private Map<UUID, UUID> legacyToNewUUIDMap;
@@ -58,7 +55,6 @@ public class PixelartManager extends ArtManager {
         executorService.setMaximumPoolSize(2);
 
         random = new Random();
-        protocolManager = ProtocolLibrary.getProtocolManager();
         copyrightManager = CopyrightManager.getInstance();
 
         initializeFixMap(new File(plugin.getDataFolder(), "replacementData.txt").getPath());
@@ -119,14 +115,12 @@ public class PixelartManager extends ArtManager {
         return 100;
     }
 
-    public void renderArtToUser(Player p, ItemStack is) {
-        if (is != null && is.getType().equals(Material.FILLED_MAP)) {
-            Location l = Utils.calculatePlayerFace(p);
-            int id = createItemFrame(p, l);
-            populateItemFrame(p, id, is);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> {
-                killItemFrame(p, id);
-            }, 100);
+    public void renderArtToUser(@NotNull Player player, @NotNull ItemStack itemStack) {
+        if (itemStack.getType().equals(Material.FILLED_MAP)) {
+            Location l = Utils.calculatePlayerFace(player);
+            int id = createItemFrame(player, l);
+            populateItemFrame(player, id, itemStack);
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killItemFrame(player, id), 100);
         }
     }
 
@@ -295,9 +289,7 @@ public class PixelartManager extends ArtManager {
                         }, threadPoolExecutor);
                     }
 
-                    CompletableFuture.allOf(tasks).thenRun(() -> {
-                        finalResult.complete(resultList);
-                    });
+                    CompletableFuture.allOf(tasks).thenRun(() -> finalResult.complete(resultList));
                 }
 
             }

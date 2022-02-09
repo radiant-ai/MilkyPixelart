@@ -188,7 +188,7 @@ public class BannerManager extends ArtManager {
         bannerEditorMenus.remove(event.getView());
     }
 
-    private boolean addPatternToBanner(@NotNull Block block, @NotNull Pattern pattern) {
+    public boolean addPatternToBanner(@NotNull Block block, @NotNull Pattern pattern) {
         if (block.getState() instanceof Banner bannerState) {
             if (bannerState.numberOfPatterns() < 16) {
                 List<Pattern> patternList = bannerState.getPatterns();
@@ -256,6 +256,7 @@ public class BannerManager extends ArtManager {
             }
             BannerMeta bannerMeta = (BannerMeta) banner.getItemMeta();
             bannerMeta.setPatterns(List.of(new Pattern(dyeColor, patternType)));
+            bannerMeta.displayName(Component.text("Узор").decorate(TextDecoration.ITALIC));
             banner.setItemMeta(bannerMeta);
             inventory.setItem(count, banner);
             count++;
@@ -280,9 +281,7 @@ public class BannerManager extends ArtManager {
         unregisterListeners();
         for (InventoryView inventoryView : bannerEditorMenus.keySet()) {
             if (MilkyPixelart.getInstance().isEnabled()) {
-                Bukkit.getScheduler().runTask(MilkyPixelart.getInstance(), () -> {
-                    inventoryView.getPlayer().closeInventory();
-                });
+                Bukkit.getScheduler().runTask(MilkyPixelart.getInstance(), () -> inventoryView.getPlayer().closeInventory());
             }
         }
     }

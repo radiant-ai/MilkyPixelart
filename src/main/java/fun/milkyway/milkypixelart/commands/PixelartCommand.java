@@ -207,7 +207,7 @@ public class PixelartCommand extends BaseCommand {
 
     @Subcommand("blacklist")
     @CommandPermission("pixelart.blacklist")
-    public class BlacklistCommands extends BaseCommand{
+    public static class BlacklistCommands extends BaseCommand{
 
         @Subcommand("add")
         @CommandCompletion("номер_карты uuid_владельца")

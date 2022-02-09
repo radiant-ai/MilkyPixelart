@@ -94,7 +94,6 @@ public class BannerUtils {
             case WHITE -> NamedTextColor.WHITE;
             case LIGHT_GRAY -> TextColor.fromHexString("#878787");
             case GRAY -> TextColor.fromHexString("#414141");
-            case BLACK -> NamedTextColor.BLACK;
             case GREEN -> TextColor.fromHexString("#2F5F00");
             case LIME -> TextColor.fromHexString("#5EB200");
             case CYAN -> TextColor.fromHexString("#359B8B");

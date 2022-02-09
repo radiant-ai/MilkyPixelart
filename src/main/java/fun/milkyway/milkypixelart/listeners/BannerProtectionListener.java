@@ -159,7 +159,7 @@ public class BannerProtectionListener implements Listener {
         return new BannerCraftDetails(clearBanners, patternedBanners, otherItems);
     }
 
-    private class BannerCraftDetails {
+    private static class BannerCraftDetails {
         private final List<ItemStack> clearBanners;
         private final List<ItemStack> patternedBanners;
         private final List<ItemStack> otherItems;
