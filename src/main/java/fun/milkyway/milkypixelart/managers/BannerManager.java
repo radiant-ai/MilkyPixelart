@@ -30,6 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 public class BannerManager extends ArtManager {
@@ -37,7 +39,7 @@ public class BannerManager extends ArtManager {
 
     private final Map<InventoryView, Block> bannerEditorMenus;
 
-    public BannerManager() {
+    private BannerManager() {
         super();
         registerListener(new BannerProtectionListener());
         registerListener(new BannerPaintListener());
@@ -51,10 +53,26 @@ public class BannerManager extends ArtManager {
         return instance;
     }
 
+    public synchronized static CompletableFuture<BannerManager> reload() {
+        CompletableFuture<BannerManager> result = new CompletableFuture<>();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                getInstance().shutdown();
+            }
+            catch (Exception exception) {
+                MilkyPixelart.getInstance().getLogger().log(Level.WARNING, exception.getMessage(), exception);
+                result.completeExceptionally(exception);
+            }
+            instance = new BannerManager();
+            result.complete(getInstance());
+        });
+        return result;
+    }
+
     @Override
     public boolean protect(@NotNull Player player, @NotNull ItemStack itemStack) {
         if (ArtManager.isBanner(itemStack) && patternNumber(itemStack) > 0) {
-            copyrightManager.protect(player, itemStack);
+            CopyrightManager.getInstance().protect(player, itemStack);
             return true;
         }
         return false;
@@ -63,23 +81,23 @@ public class BannerManager extends ArtManager {
     @Override
     public boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack) {
         if (ArtManager.isBanner(itemStack) && patternNumber(itemStack) > 0) {
-            copyrightManager.protect(uuid, name, itemStack);
+            CopyrightManager.getInstance().protect(uuid, name, itemStack);
             return true;
         }
         return false;
     }
 
     public void protect(@NotNull UUID uuid, @Nullable String name, @NotNull Banner banner) {
-        copyrightManager.protect(uuid, name, banner);
+        CopyrightManager.getInstance().protect(uuid, name, banner);
     }
 
     @Override
     public @Nullable CopyrightManager.Author getAuthor(ItemStack itemStack) {
-        return copyrightManager.getAuthor(itemStack);
+        return CopyrightManager.getInstance().getAuthor(itemStack);
     }
 
     public @Nullable CopyrightManager.Author getAuthor(@NotNull Banner banner) {
-        return copyrightManager.getAuthor(banner);
+        return CopyrightManager.getInstance().getAuthor(banner);
     }
 
     public @Nullable CopyrightManager.Author getAuthor(@NotNull Block block) {
@@ -91,7 +109,7 @@ public class BannerManager extends ArtManager {
 
     @Override
     public @NotNull ItemStack getUnprotectedCopy(ItemStack itemStack) {
-        return copyrightManager.getUnprotectedCopy(itemStack);
+        return CopyrightManager.getInstance().getUnprotectedCopy(itemStack);
     }
 
     @Override
@@ -131,7 +149,7 @@ public class BannerManager extends ArtManager {
     public void hidePatterns(@NotNull ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta != null) {
-            copyrightManager.hidePatterns(itemMeta);
+            CopyrightManager.getInstance().hidePatterns(itemMeta);
             itemStack.setItemMeta(itemMeta);
         }
     }
@@ -277,7 +295,7 @@ public class BannerManager extends ArtManager {
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws Exception{
         unregisterListeners();
         for (InventoryView inventoryView : bannerEditorMenus.keySet()) {
             if (MilkyPixelart.getInstance().isEnabled()) {

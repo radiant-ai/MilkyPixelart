@@ -3,6 +3,7 @@ package fun.milkyway.milkypixelart.managers;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
 import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
@@ -39,7 +40,6 @@ public class PixelartManager extends ArtManager {
 
     private final Random random;
     private final ThreadPoolExecutor executorService;
-    private final CopyrightManager copyrightManager;
 
     private Map<UUID, UUID> legacyToNewUUIDMap;
 
@@ -55,7 +55,6 @@ public class PixelartManager extends ArtManager {
         executorService.setMaximumPoolSize(2);
 
         random = new Random();
-        copyrightManager = CopyrightManager.getInstance();
 
         initializeFixMap(new File(plugin.getDataFolder(), "replacementData.txt").getPath());
         loadBlacklist();
@@ -72,10 +71,16 @@ public class PixelartManager extends ArtManager {
         return instance;
     }
 
-    public static CompletableFuture<PixelartManager> reload() {
+    public synchronized static CompletableFuture<PixelartManager> reload() {
         CompletableFuture<PixelartManager> result = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(() -> {
-            getInstance().shutdown();
+            try {
+                getInstance().shutdown();
+            }
+            catch (Exception exception) {
+                MilkyPixelart.getInstance().getLogger().log(Level.WARNING, exception.getMessage(), exception);
+                result.completeExceptionally(exception);
+            }
             instance = new PixelartManager();
             result.complete(getInstance());
         });
@@ -85,7 +90,7 @@ public class PixelartManager extends ArtManager {
     @Override
     public boolean protect(@NotNull Player player, @NotNull ItemStack map) {
         if (ArtManager.isMap(map)) {
-            copyrightManager.protect(player, map);
+            CopyrightManager.getInstance().protect(player, map);
             return true;
         }
         return false;
@@ -94,7 +99,7 @@ public class PixelartManager extends ArtManager {
     @Override
     public boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack map) {
         if (ArtManager.isMap(map)) {
-            copyrightManager.protect(uuid, name, map);
+            CopyrightManager.getInstance().protect(uuid, name, map);
             return true;
         }
         return false;
@@ -102,12 +107,12 @@ public class PixelartManager extends ArtManager {
 
     @Override
     public @Nullable CopyrightManager.Author getAuthor(ItemStack map) {
-        return copyrightManager.getAuthor(map);
+        return CopyrightManager.getInstance().getAuthor(map);
     }
 
     @Override
     public @NotNull ItemStack getUnprotectedCopy(ItemStack map) {
-        return copyrightManager.getUnprotectedCopy(map);
+        return CopyrightManager.getInstance().getUnprotectedCopy(map);
     }
 
     @Override
@@ -394,7 +399,7 @@ public class PixelartManager extends ArtManager {
     }
 
     public boolean isLegitimateOwner(@NotNull ItemStack map) {
-        CopyrightManager.Author author = copyrightManager.getAuthor(map);
+        CopyrightManager.Author author = CopyrightManager.getInstance().getAuthor(map);
         MapView mapView = ((MapMeta) map.getItemMeta()).getMapView();
 
         if (mapView == null) {
@@ -436,17 +441,13 @@ public class PixelartManager extends ArtManager {
         return -1;
     }
 
-    public void shutdown() {
+    @Override
+    public void shutdown() throws Exception {
         saveBlacklist();
         executorService.shutdown();
         unregisterListeners();
-        try {
-            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                plugin.getLogger().warning("Force terminated executor service after timeout!");
-            }
-        }
-        catch (InterruptedException exception) {
-            plugin.getLogger().log(Level.WARNING, "Executor shutdown was interrupted!", exception);
+        if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+            plugin.getLogger().warning("Force terminated executor service after timeout!");
         }
     }
 }

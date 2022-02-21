@@ -6,7 +6,7 @@
 
     <groupId>fun.milkyway</groupId>
     <artifactId>MilkyPixelart</artifactId>
-    <version>1.5.0</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
 
     <name>MilkyPixelart</name>
@@ -49,6 +49,10 @@
                             <pattern>net.querz</pattern>
                             <shadedPattern>fun.milkyway.milkypixelart.querz</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>net.kyori.adventure.text.minimessage</pattern>
+                            <shadedPattern>fun.milkyway.milkypixelart.adventure.minimessage</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
@@ -80,6 +84,10 @@
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
         <repository>
             <id>aikar</id>
@@ -129,6 +137,11 @@
             <groupId>com.github.Querz</groupId>
             <artifactId>NBT</artifactId>
             <version>6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>4.2.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

@@ -195,13 +195,8 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("reload")
     public void onReload(CommandSender commandSender) {
         commandSender.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
-        PixelartManager.reload().thenAcceptAsync(manager -> {
-            if (manager != null) {
-                commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
-            }
-            else {
-                commandSender.sendMessage(Component.text("Ошибка перезагрузки, срочно проверьте консоль!").color(TextColor.fromHexString("#FF995E")));
-            }
+        MilkyPixelart.getInstance().reload().thenRun(() -> {
+            commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
         });
     }
 

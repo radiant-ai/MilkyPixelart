@@ -18,16 +18,16 @@ import java.util.UUID;
 
 public abstract class ArtManager {
     protected final MilkyPixelart plugin;
-    protected final CopyrightManager copyrightManager;
     protected final ProtocolManager protocolManager;
 
     protected List<Listener> listeners;
 
     public ArtManager() {
         this.plugin = MilkyPixelart.getInstance();
-        this.copyrightManager = CopyrightManager.getInstance();
         this.listeners = new LinkedList<>();
         protocolManager = ProtocolLibrary.getProtocolManager();
+        //Always inject copyright manager
+        CopyrightManager.getInstance();
     }
 
     protected void registerListener(Listener listener) {
@@ -52,7 +52,7 @@ public abstract class ArtManager {
 
     public abstract int getProtectionCost();
 
-    public abstract void shutdown();
+    public abstract void shutdown() throws Exception;
 
     public static boolean isBanner(@Nullable ItemStack itemStack) {
         return itemStack != null && Tag.BANNERS.isTagged(itemStack.getType());

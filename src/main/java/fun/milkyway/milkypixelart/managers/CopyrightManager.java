@@ -44,8 +44,6 @@ public class CopyrightManager {
     protected final NamespacedKey copyrightNameKey = new NamespacedKey("survivaltweaks", "copyrightname");
 
     protected static final String COPYRIGHT_STRING_LEGACY = "Copyrighted by";
-    protected static final String COPYRIGHT_STRING = "Защищено от копирования";
-    protected static final String PREFIX = "© ";
 
     private static CopyrightManager instance;
 
@@ -59,6 +57,10 @@ public class CopyrightManager {
             instance = new CopyrightManager();
         }
         return instance;
+    }
+
+    public synchronized static void reload() {
+        instance = new CopyrightManager();
     }
 
     protected void protect(@NotNull Player p, @NotNull ItemStack itemStack) {
@@ -134,13 +136,8 @@ public class CopyrightManager {
         }
 
         if (lore != null) {
-            lore.add(Component.text()
-                    .append(Component.text(COPYRIGHT_STRING).color(TextColor.fromHexString("#FFFF99")).decoration(TextDecoration.ITALIC, false))
-                    .build());
-            lore.add(Component.text()
-                    .append(Component.text(PREFIX).color(TextColor.fromHexString("#FFFF99")).decoration(TextDecoration.ITALIC, false))
-                    .append(Component.text(name == null ? "" : name).color(TextColor.fromHexString("#9AFF0F")).decoration(TextDecoration.ITALIC, false))
-                    .build());
+            lore.add(LangManager.getInstance().getLang("common.copyrightText"));
+            lore.add(LangManager.getInstance().getLang("common.copyrightAuthorName", name == null ? "" : name));
         }
 
         itemMeta.lore(lore);
@@ -160,8 +157,8 @@ public class CopyrightManager {
             ListIterator<Component> iterator = lore.listIterator();
             while(iterator.hasNext()){
                 String line = PlainTextComponentSerializer.plainText().serialize(iterator.next());
-                if(line.contains(COPYRIGHT_STRING_LEGACY) || line.contains(COPYRIGHT_STRING)
-                        || line.contains(PREFIX)) {
+                if(line.contains(COPYRIGHT_STRING_LEGACY) || line.contains(LangManager.getInstance().getLangPlain("common.copyrightText"))
+                        || line.contains(LangManager.getInstance().getLangPlain("copyrightAuthorName", ""))) {
                     iterator.remove();
                 }
             }

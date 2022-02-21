@@ -5,15 +5,27 @@ import co.aikar.commands.PaperCommandManager;
 import fun.milkyway.milkypixelart.commands.ArgsResolver;
 import fun.milkyway.milkypixelart.commands.PixelartCommand;
 import fun.milkyway.milkypixelart.managers.BannerManager;
+import fun.milkyway.milkypixelart.managers.CopyrightManager;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+
 public final class MilkyPixelart extends JavaPlugin {
     private static MilkyPixelart instance;
     private Economy economy;
+    private FileConfiguration configuration;
 
     @Override
     public void onEnable() {
@@ -29,13 +41,18 @@ public final class MilkyPixelart extends JavaPlugin {
         paperCommandManager.registerCommand(new PixelartCommand());
 
         if (!setupEconomy()) {
-            getLogger().severe("Economy not found, shutting down the server as it may cause big issues otherwise!");
-            getServer().shutdown();
+            getLogger().severe("Economy not found, it may cause great issues! Install any economy provider like Essentials or CMI!");
         }
 
         //Inject managers
         PixelartManager.getInstance();
         BannerManager.getInstance();
+
+        try {
+            loadConfig();
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, e.getMessage(), e);
+        }
     }
 
     private boolean setupEconomy() {
@@ -52,8 +69,54 @@ public final class MilkyPixelart extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        PixelartManager.getInstance().shutdown();
-        BannerManager.getInstance().shutdown();
+        try {
+            PixelartManager.getInstance().shutdown();
+        }
+        catch (Exception exception) {
+            getLogger().log(Level.WARNING, exception.getMessage(), exception);
+        }
+
+        try {
+            BannerManager.getInstance().shutdown();
+        }
+        catch (Exception exception) {
+            getLogger().log(Level.WARNING, exception.getMessage(), exception);
+        }
+    }
+
+    public void loadConfig() throws IOException {
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            getDataFolder().mkdir();
+            saveDefaultConfig();
+        }
+        InputStream defaultConfigStream = getResource("config.yml");
+        configuration = YamlConfiguration.loadConfiguration(configFile);
+        if (defaultConfigStream != null) {
+            configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defaultConfigStream)));
+        }
+        configuration.options().copyDefaults(true);
+        configuration.save(configFile);
+    }
+
+    public CompletableFuture<Void> reload() {
+        try {
+            loadConfig();
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, "Error occurred while reloading the plugin!", e);
+        }
+        LangManager.reload();
+        CopyrightManager.reload();
+        CompletableFuture<MilkyPixelart> result = new CompletableFuture<>();
+        CompletableFuture<Object> reload1 = PixelartManager.reload().handle((m, e) -> {
+            if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading pixelart manager!", e);
+            return m;
+        });
+        CompletableFuture<Object> reload2 = BannerManager.reload().handle((m, e) -> {
+            if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading banner manager!", e);
+            return m;
+        });
+        return CompletableFuture.allOf(reload1, reload2);
     }
 
     public Economy getEconomy() {
@@ -62,5 +125,9 @@ public final class MilkyPixelart extends JavaPlugin {
 
     public static @NotNull MilkyPixelart getInstance() {
         return instance;
+    }
+
+    public FileConfiguration getConfiguration() {
+        return configuration;
     }
 }
