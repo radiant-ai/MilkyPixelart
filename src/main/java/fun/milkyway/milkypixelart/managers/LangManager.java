@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class LangManager {
     private static LangManager instance;
-    private MiniMessage miniMessage;
+    private final MiniMessage miniMessage;
 
     private LangManager() {
         miniMessage = MiniMessage.builder().build();

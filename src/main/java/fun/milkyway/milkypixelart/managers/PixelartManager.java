@@ -117,7 +117,7 @@ public class PixelartManager extends ArtManager {
 
     @Override
     public int getProtectionCost() {
-        return 100;
+        return MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.copyrightPrice");
     }
 
     public void renderArtToUser(@NotNull Player player, @NotNull ItemStack itemStack) {

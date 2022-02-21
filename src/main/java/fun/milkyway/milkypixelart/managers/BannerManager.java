@@ -114,7 +114,7 @@ public class BannerManager extends ArtManager {
 
     @Override
     public int getProtectionCost() {
-        return 20;
+        return MilkyPixelart.getInstance().getConfiguration().getInt("banners.copyrightPrice");
     }
 
     public int patternNumber(@NotNull ItemStack itemStack) {

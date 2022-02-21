@@ -1,5 +1,7 @@
 package fun.milkyway.milkypixelart.managers;
 
+import fun.milkyway.milkypixelart.MilkyPixelart;
+import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -38,12 +40,11 @@ public class CopyrightManager {
         }
     }
 
+    //we have to use old namespace to support legacy copyrighted items
     @SuppressWarnings("deprecation")
     protected final NamespacedKey copyrightKey = new NamespacedKey("survivaltweaks", "copyright");
     @SuppressWarnings("deprecation")
     protected final NamespacedKey copyrightNameKey = new NamespacedKey("survivaltweaks", "copyrightname");
-
-    protected static final String COPYRIGHT_STRING_LEGACY = "Copyrighted by";
 
     private static CopyrightManager instance;
 
@@ -136,8 +137,16 @@ public class CopyrightManager {
         }
 
         if (lore != null) {
-            lore.add(LangManager.getInstance().getLang("common.copyrightText"));
-            lore.add(LangManager.getInstance().getLang("common.copyrightAuthorName", name == null ? "" : name));
+            Component line = LangManager.getInstance().getLang("common.copyrightText");
+            if (!line.hasDecoration(TextDecoration.ITALIC)) { //we need to allow explicit italics, but still remove the default one
+                line = line.decoration(TextDecoration.ITALIC, false);
+            }
+            lore.add(line);
+            line = LangManager.getInstance().getLang("common.copyrightAuthorName", name == null ? "" : name);
+            if (!line.hasDecoration(TextDecoration.ITALIC)) {
+                line = line.decoration(TextDecoration.ITALIC, false);
+            }
+            lore.add(line);
         }
 
         itemMeta.lore(lore);
@@ -157,7 +166,8 @@ public class CopyrightManager {
             ListIterator<Component> iterator = lore.listIterator();
             while(iterator.hasNext()){
                 String line = PlainTextComponentSerializer.plainText().serialize(iterator.next());
-                if(line.contains(COPYRIGHT_STRING_LEGACY) || line.contains(LangManager.getInstance().getLangPlain("common.copyrightText"))
+                if(Utils.containsAny(line, MilkyPixelart.getInstance().getConfiguration().getStringList("common.copyrightLegacyStrings"))
+                        || line.contains(LangManager.getInstance().getLangPlain("common.copyrightText"))
                         || line.contains(LangManager.getInstance().getLangPlain("copyrightAuthorName", ""))) {
                     iterator.remove();
                 }

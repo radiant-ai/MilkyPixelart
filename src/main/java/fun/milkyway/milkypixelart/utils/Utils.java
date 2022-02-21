@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import java.util.List;
+
 public class Utils {
     public static Location calculatePlayerFace(Player p) {
         double x = p.getLocation().getX();
@@ -84,5 +86,14 @@ public class Utils {
             case 5 -> 270.0;
             default -> 0.0;
         };
+    }
+
+    public static boolean containsAny(String string, List<String> stringList) {
+        for (String stringFromList : stringList) {
+            if (string.contains(stringFromList)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
