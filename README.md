@@ -18,3 +18,32 @@ Instantly search duplicated art maps to enforce copyright rules on your game ser
 Add the desired art maps to blacklist so they instantly get deleted on your server:
 
 ![Demo](https://i.imgur.com/MGqk2mM.png)
+
+## Dependencies
+- PaperMC 1.18.1+
+- ProtocolLib
+- Vault + any Economy plugin
+## Configuration
+```
+common:
+  # the first lore line shown on a protected item
+  copyrightText: "<#FFFF99>Protected from duplication"
+  
+  # the second lore line shown can start or finish with author's name (<arg1>)
+  copyrightAuthorName: "<#FFFF99>© <#9AFF0F><arg1>"
+  
+  # any lines we should remove from the lore when item is duplicated
+  copyrightLegacyStrings:
+    - "Copyrighted by"
+banners:
+  # banner protection price
+  copyrightPrice: 20
+pixelarts:
+  # art map protection price
+  copyrightPrice: 100
+  # these lines should be contained by GUI's title to enable art map preview
+  previewInventories:
+    - "Auction"
+    - "Market"
+    - "Shop"
+```
