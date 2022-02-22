@@ -166,16 +166,12 @@ public class PixelartManager extends ArtManager {
         MapMeta mapMeta = (MapMeta) is.getItemMeta();
         if (mapMeta.hasMapView()) {
             MapView mapView = mapMeta.getMapView();
-
-            CompletableFuture.supplyAsync(() -> {
-                    if (mapView == null) {
-                        return null;
-                    }
-                    return getMapBytes(mapView.getId());
-                }, executorService).thenAccept(bytes -> {
+            if (mapView == null) {
+                return;
+            }
+            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAccept(bytes -> {
                 try {
-                    if (mapView != null &&
-                            !mapView.getRenderers().isEmpty()) {
+                    if (!mapView.getRenderers().isEmpty()) {
 
                         PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.ENTITY_METADATA);
                         pc.getIntegers().write(0, id);

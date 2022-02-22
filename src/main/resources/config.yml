@@ -1,9 +1,13 @@
 common:
-  copyrightText: "<reset><#FFFF99>Защищено от копирования"
-  copyrightAuthorName: "<reset><#FFFF99>© <#9AFF0F><arg1>"
+  copyrightText: "<#FFFF99>Protected from duplication"
+  copyrightAuthorName: "<#FFFF99>© <#9AFF0F><arg1>"
   copyrightLegacyStrings:
     - "Copyrighted by"
 banners:
   copyrightPrice: 20
-:
+pixelarts:
   copyrightPrice: 100
+  previewInventories:
+    - "Auction"
+    - "Market"
+    - "Shop"

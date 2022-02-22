@@ -1,9 +1,11 @@
 package fun.milkyway.milkypixelart.listeners;
 
+import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -23,11 +25,8 @@ public class AuctionPreviewListener implements Listener {
                 event.getClickedInventory().getLocation() == null &&
                 event.getCurrentItem() != null &&
                 event.getCurrentItem().getType().equals(Material.FILLED_MAP)) {
-            String invName = event.getView().title().toString();
-            if ((invName.contains("Рынок")
-                    || invName.contains("Поиск")
-                    || invName.contains("Pixelart")
-                    || invName.contains("Просмотр"))
+            String invName = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
+            if (Utils.containsAny(invName, MilkyPixelart.getInstance().getConfiguration().getStringList("pixelarts.previewInventories"))
                     && event.getWhoClicked() instanceof Player player) {
                 ItemStack stack = event.getCurrentItem();
                 player.closeInventory();

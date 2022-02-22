@@ -3,6 +3,7 @@ package fun.milkyway.milkypixelart.utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -88,7 +89,7 @@ public class Utils {
         };
     }
 
-    public static boolean containsAny(String string, List<String> stringList) {
+    public static boolean containsAny(@NotNull String string, @NotNull List<String> stringList) {
         for (String stringFromList : stringList) {
             if (string.contains(stringFromList)) {
                 return true;

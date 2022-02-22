@@ -36,7 +36,7 @@ public class PixelartCommand extends BaseCommand {
     @CatchUnknown
     @Subcommand("help")
     public void onHelpCommand(CommandSender commandSender) {
-        Component component = Component.text()
+        TextComponent.Builder componentBuilder = Component.text()
                 .append(
                         Component.newline()
                 )
@@ -105,21 +105,23 @@ public class PixelartCommand extends BaseCommand {
                 )
                 .append(
                         Component.newline()
-                )
-                .append(
-                        Component.text("/art fix").color(TextColor.fromHexString("#9AFF0F"))
-                )
-                .append(
-                        Component.text("- исправить предмет, если вы больше не можете его копировать после переноса базы данных").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
+                );
+        if (commandSender.hasPermission("pixelart.fix")) {
+            componentBuilder.append(
+                            Component.text("/art fix").color(TextColor.fromHexString("#9AFF0F"))
+                    )
+                    .append(
+                            Component.text("- исправить предмет, если вы больше не можете его копировать после переноса базы данных").color(TextColor.fromHexString("#FFFF99"))
+                    )
+                    .append(
+                            Component.newline()
+                    );
+        }
+
+        componentBuilder.append(
                         Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .build();
-        commandSender.sendMessage(component);
+                );
+        commandSender.sendMessage(componentBuilder.build());
     }
 
     @CommandPermission("pixelart.protect")
@@ -195,9 +197,7 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("reload")
     public void onReload(CommandSender commandSender) {
         commandSender.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
-        MilkyPixelart.getInstance().reload().thenRun(() -> {
-            commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F")));
-        });
+        MilkyPixelart.getInstance().reload().thenRun(() -> commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F"))));
     }
 
     @Subcommand("blacklist")

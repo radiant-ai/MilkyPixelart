@@ -59,7 +59,7 @@ public class PixelartProtectionListener implements Listener {
                 CopyrightManager.Author author = artManager.getAuthor(upperSlot);
                 if (author != null && author.getUuid().equals(player.getUniqueId())) {
                     ItemStack result = artManager.getUnprotectedCopy(upperSlot);
-                    result.setAmount(1);
+                    result.setAmount(2);
                     event.setResult(result);
                     messageOnceManager.sendMessageOnce(player,
                             Component.text("Помните, копии защищенных артов не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));

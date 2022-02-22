@@ -3,7 +3,6 @@ package fun.milkyway.milkypixelart.managers;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
