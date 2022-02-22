@@ -167,7 +167,7 @@ public class CopyrightManager {
                 String line = PlainTextComponentSerializer.plainText().serialize(iterator.next());
                 if(Utils.containsAny(line, MilkyPixelart.getInstance().getConfiguration().getStringList("common.copyrightLegacyStrings"))
                         || line.contains(LangManager.getInstance().getLangPlain("common.copyrightText"))
-                        || line.contains(LangManager.getInstance().getLangPlain("copyrightAuthorName", ""))) {
+                        || line.contains(LangManager.getInstance().getLangPlain("common.copyrightAuthorName", ""))) {
                     iterator.remove();
                 }
             }
