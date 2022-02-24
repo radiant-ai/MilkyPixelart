@@ -46,7 +46,7 @@ jobs:
 
     - name: Build with Maven
       run: |
-       wget -o server.jar https://papermc.io/api/v2/projects/paper/versions/1.18.1/builds/202/downloads/paper-1.18.1-202.jar
+       wget https://papermc.io/api/v2/projects/paper/versions/1.18.1/builds/202/downloads/paper-1.18.1-202.jar -O server.jar
        java -jar server.jar nogui
        mvn install:install-file -f pom_codeql.xml -Dfile="versions/1.18.1/paper-1.18.1.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="1.18.1" -Dpackaging=jar
        mvn -B package -f pom_codeql.xml
