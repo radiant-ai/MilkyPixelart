@@ -46,6 +46,8 @@ jobs:
 
     - name: Build with Maven
       run: |
+       wget https://launcher.mojang.com/v1/objects/125e5adf40c659fd3bce3e66e67a16bb49ecc1b9/server.jar
+       mvn install:install-file -Dfile=server.jar -DgroupId=minecraft -DartifactId=minecraft -Dversion="1.18.1" -Dpackaging=jar
        mvn -B package --file pom_codeql.xml
 
     - name: Perform CodeQL Analysis
