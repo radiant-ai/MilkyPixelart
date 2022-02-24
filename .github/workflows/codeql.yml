@@ -46,9 +46,10 @@ jobs:
 
     - name: Build with Maven
       run: |
-       wget https://launcher.mojang.com/v1/objects/125e5adf40c659fd3bce3e66e67a16bb49ecc1b9/server.jar
-       mvn install:install-file -Dfile=server.jar -DgroupId=minecraft -DartifactId=minecraft -Dversion="1.18.1" -Dpackaging=jar
-       mvn -B package --file pom_codeql.xml
+       wget -o server.jar https://papermc.io/api/v2/projects/paper/versions/1.18.1/builds/202/downloads/paper-1.18.1-202.jar
+       java -jar server.jar nogui
+       mvn install:install-file -f pom_codeql.xml -Dfile="versions/1.18.1/paper-1.18.1.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="1.18.1" -Dpackaging=jar
+       mvn -B package -f pom_codeql.xml
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
