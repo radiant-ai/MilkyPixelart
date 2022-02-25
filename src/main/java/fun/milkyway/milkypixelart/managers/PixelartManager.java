@@ -396,6 +396,12 @@ public class PixelartManager extends ArtManager {
 
     public boolean isLegitimateOwner(@NotNull ItemStack map) {
         CopyrightManager.Author author = CopyrightManager.getInstance().getAuthor(map);
+        if (!(map.getItemMeta() instanceof MapMeta)) {
+            return true;
+        }
+        if (!((MapMeta) map.getItemMeta()).hasMapView()) {
+            return true;
+        }
         MapView mapView = ((MapMeta) map.getItemMeta()).getMapView();
 
         if (mapView == null) {
