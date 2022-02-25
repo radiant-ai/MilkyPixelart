@@ -44,21 +44,12 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
-
-    # ✏️ If the Autobuild fails above, remove it and uncomment the following three lines
-    #    and modify them (or add more) to build your code if your project
-    #    uses a compiled language
-
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - name: Build with Maven
+      run: |
+       wget https://papermc.io/api/v2/projects/paper/versions/1.18.1/builds/202/downloads/paper-1.18.1-202.jar -O server.jar
+       java -jar server.jar nogui
+       mvn install:install-file -f pom_codeql.xml -Dfile="versions/1.18.1/paper-1.18.1.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="1.18.1" -Dpackaging=jar
+       mvn -B package -f pom_codeql.xml
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
