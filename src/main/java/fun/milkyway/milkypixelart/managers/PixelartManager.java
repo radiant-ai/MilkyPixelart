@@ -120,16 +120,24 @@ public class PixelartManager extends ArtManager {
         return MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.copyrightPrice");
     }
 
-    public void renderArtToUser(@NotNull Player player, @NotNull ItemStack itemStack) {
-        if (itemStack.getType().equals(Material.FILLED_MAP)) {
-            Location l = Utils.calculatePlayerFace(player);
-            int id = createItemFrame(player, l);
-            populateItemFrame(player, id, itemStack);
-            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killItemFrame(player, id), 100);
+    public CompletableFuture<Boolean> renderArtToUser(@NotNull Player player, @NotNull ItemStack itemStack) {
+        if (!itemStack.getType().equals(Material.FILLED_MAP)) {
+            return CompletableFuture.completedFuture(false);
         }
+
+        Location l = Utils.calculatePlayerFace(player);
+
+        int id = createItemFrame(player, l);
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killItemFrame(player, id), 100);
+
+        if (id == 0) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return populateItemFrame(player, id, itemStack);
     }
 
-    public int createItemFrame(@NotNull Player p, @NotNull Location l) {
+    public int createItemFrame(@NotNull Player player, @NotNull Location l) {
         int direction = Utils.getDirection(l);
         int id = Integer.MAX_VALUE - random.nextInt() % 100000;
 
@@ -154,54 +162,68 @@ public class PixelartManager extends ArtManager {
         pc.getIntegers().write(6, direction);
 
         try {
-            protocolManager.sendServerPacket(p, pc);
+            protocolManager.sendServerPacket(player, pc);
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+            return 0;
         }
 
         return id;
     }
 
-    public void populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack is) {
-        MapMeta mapMeta = (MapMeta) is.getItemMeta();
+    public CompletableFuture<Boolean> populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack mapItemStack) {
+        CompletableFuture<Boolean> result = new CompletableFuture<>();
+        MapMeta mapMeta = (MapMeta) mapItemStack.getItemMeta();
         if (mapMeta.hasMapView()) {
             MapView mapView = mapMeta.getMapView();
+
             if (mapView == null) {
-                return;
+                return CompletableFuture.completedFuture(false);
             }
-            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAccept(bytes -> {
-                try {
-                    if (!mapView.getRenderers().isEmpty()) {
 
-                        PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.ENTITY_METADATA);
-                        pc.getIntegers().write(0, id);
-                        WrappedDataWatcher watcher = new WrappedDataWatcher();
-                        watcher.setEntity(player);
-                        watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), is);
-                        pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAcceptAsync(bytes -> {
+                if (!mapView.getRenderers().isEmpty()) {
 
-                        try {
-                            protocolManager.sendServerPacket(player, pc);
-                        } catch (InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+                    sendMapPacket(player, id, mapItemStack);
 
-                        if (bytes != null) {
-                            WorldMap.b worldMap = new WorldMap.b(0 ,0, 128, 128, bytes);
-                            PacketPlayOutMap nmsPacket = new PacketPlayOutMap(mapView.getId(), (byte) 4, false, null, worldMap);
-                            PacketContainer pc2 = PacketContainer.fromPacket(nmsPacket);
-                            try {
-                                protocolManager.sendServerPacket(player, pc2);
-                            } catch (InvocationTargetException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                    if (bytes != null) {
+                        sendMapPacket(player, mapView.getId(), bytes);
                     }
+
+                    result.complete(true);
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+
+                result.complete(false);
+
+            }, executorService);
+        }
+
+        return result;
+    }
+
+    public void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack map) {
+        PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.ENTITY_METADATA);
+        pc.getIntegers().write(0, itemFrameId);
+        WrappedDataWatcher watcher = new WrappedDataWatcher();
+        watcher.setEntity(player);
+        watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), map);
+        pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
+
+        try {
+            protocolManager.sendServerPacket(player, pc);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMapPacket(@NotNull Player player, int mapId,  byte @NotNull [] bytes) {
+        WorldMap.b worldMap = new WorldMap.b(0 ,0, 128, 128, bytes);
+        PacketPlayOutMap nmsPacket = new PacketPlayOutMap(mapId, (byte) 4, false, null, worldMap);
+        PacketContainer pc2 = PacketContainer.fromPacket(nmsPacket);
+        try {
+            protocolManager.sendServerPacket(player, pc2);
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 
