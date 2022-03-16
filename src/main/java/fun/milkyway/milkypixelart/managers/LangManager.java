@@ -3,8 +3,8 @@ package fun.milkyway.milkypixelart.managers;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.Template;
-import net.kyori.adventure.text.minimessage.template.TemplateResolver;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,13 +35,13 @@ public class LangManager {
         }
 
         if (args.length > 0) {
-            Template[] templates = new Template[args.length];
+            TagResolver[] placeholders = new TagResolver[args.length];
 
             for (int i = 0; i < args.length; i++) {
-                templates[i] = Template.template("arg"+(i+1), args[i]);
+                placeholders[i] = TagResolver.resolver(Placeholder.parsed("arg"+(i+1), args[i]));
             }
 
-            return miniMessage.deserialize(format, TemplateResolver.templates(templates));
+            return miniMessage.deserialize(format, placeholders);
         }
         else {
             return miniMessage.deserialize(format);

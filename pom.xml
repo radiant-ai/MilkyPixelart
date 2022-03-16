@@ -6,7 +6,7 @@
 
     <groupId>fun.milkyway</groupId>
     <artifactId>MilkyPixelart</artifactId>
-    <version>1.6.2</version>
+    <version>1.6.3</version>
     <packaging>jar</packaging>
 
     <name>MilkyPixelart</name>
@@ -48,10 +48,6 @@
                         <relocation>
                             <pattern>net.querz</pattern>
                             <shadedPattern>fun.milkyway.milkypixelart.querz</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>net.kyori.adventure.text.minimessage</pattern>
-                            <shadedPattern>fun.milkyway.milkypixelart.adventure.minimessage</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -107,13 +103,13 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.18.1-R0.1-SNAPSHOT</version>
+            <version>1.18.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>paperUnobf</groupId>
             <artifactId>paperUnobf</artifactId>
-            <version>1.18.1</version>
+            <version>1.18.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -137,11 +133,6 @@
             <groupId>com.github.Querz</groupId>
             <artifactId>NBT</artifactId>
             <version>6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.2.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

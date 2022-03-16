@@ -25,7 +25,6 @@ public class AuctionPreviewListener implements Listener {
         PixelartManager pixelartManager = PixelartManager.getInstance();
         if (event.getClick().isRightClick() &&
                 event.getClickedInventory() != null &&
-                event.getClickedInventory().getLocation() == null &&
                 event.getCurrentItem() != null &&
                 event.getCurrentItem().getType().equals(Material.FILLED_MAP)) {
             String invName = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
