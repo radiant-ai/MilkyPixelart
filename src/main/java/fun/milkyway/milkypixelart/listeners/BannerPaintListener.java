@@ -153,7 +153,7 @@ public class BannerPaintListener implements Listener {
     }
 
     private boolean hasLoom(@NotNull Player player) {
-        return player.getInventory().contains(Material.LOOM) || player.hasPermission("milkypixelart.bypassloom");
+        return player.getInventory().contains(Material.LOOM) || player.hasPermission("pixelart.bypassloom");
     }
 
     private boolean hasBlockAccess(@NotNull Block block, @NotNull Player player) {

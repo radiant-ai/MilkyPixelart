@@ -2,7 +2,7 @@ package fun.milkyway.milkypixelart;
 
 import co.aikar.commands.Locales;
 import co.aikar.commands.PaperCommandManager;
-import fun.milkyway.milkypixelart.commands.ArgsResolver;
+import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.commands.PixelartCommand;
 import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
@@ -27,6 +27,9 @@ public final class MilkyPixelart extends JavaPlugin {
     private Economy economy;
     private FileConfiguration configuration;
 
+    private PaperCommandManager paperCommandManager;
+    private PixelartCommand pixelartCommand;
+
     @Override
     public void onEnable() {
         instance = this;
@@ -35,10 +38,19 @@ public final class MilkyPixelart extends JavaPlugin {
             getLogger().info("Created data folder!");
         }
 
-        PaperCommandManager paperCommandManager = new PaperCommandManager(this);
+        try {
+            loadConfig();
+        } catch (IOException e) {
+            getLogger().log(Level.WARNING, e.getMessage(), e);
+        }
+
+        paperCommandManager = new PaperCommandManager(this);
         paperCommandManager.getLocales().setDefaultLocale(Locales.RUSSIAN);
-        ArgsResolver.addResolvers(paperCommandManager);
-        paperCommandManager.registerCommand(new PixelartCommand());
+
+        CommandAddons.addResolvers(paperCommandManager);
+        CommandAddons.loadAliases(paperCommandManager);
+        pixelartCommand = new PixelartCommand();
+        paperCommandManager.registerCommand(pixelartCommand);
 
         if (!setupEconomy()) {
             getLogger().severe("Economy not found, it may cause great issues! Install any economy provider like Essentials or CMI!");
@@ -47,12 +59,6 @@ public final class MilkyPixelart extends JavaPlugin {
         //Inject managers
         PixelartManager.getInstance();
         BannerManager.getInstance();
-
-        try {
-            loadConfig();
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING, e.getMessage(), e);
-        }
     }
 
     private boolean setupEconomy() {
@@ -107,6 +113,13 @@ public final class MilkyPixelart extends JavaPlugin {
         }
         LangManager.reload();
         CopyrightManager.reload();
+
+        CommandAddons.loadAliases(paperCommandManager);
+
+        paperCommandManager.unregisterCommand(pixelartCommand);
+        pixelartCommand = new PixelartCommand();
+        paperCommandManager.registerCommand(pixelartCommand);
+
         CompletableFuture<MilkyPixelart> result = new CompletableFuture<>();
         CompletableFuture<Object> reload1 = PixelartManager.reload().handle((m, e) -> {
             if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading pixelart manager!", e);

@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
-@CommandAlias("pixelart|pxt|art")
+@CommandAlias("%pixelartcommand")
 public class PixelartCommand extends BaseCommand {
 
     private final MilkyPixelart plugin;

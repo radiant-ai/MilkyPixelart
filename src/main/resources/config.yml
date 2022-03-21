@@ -3,10 +3,15 @@ common:
   copyrightAuthorName: "<#FFFF99>© <#9AFF0F><arg1>"
   copyrightLegacyStrings:
     - "Copyrighted by"
+commands:
+  aliases:
+    - art
+    - pxt
 banners:
   copyrightPrice: 20
 pixelarts:
   copyrightPrice: 100
+  previewEverywhere: false
   previewInventories:
     - "Auction"
     - "Market"
