@@ -46,6 +46,10 @@ banners:
   # banner protection price
   copyrightPrice: 20
 pixelarts:
+  # cooldown for show and showall
+  showArtCooldown: 300
+  # message for show and showall <arg1> - nickname and <arg2> - art list
+  showMessage: "<#9AFF0F><arg1> <#FFFF99>shows off their arts: <arg2>"
   # art map protection price
   copyrightPrice: 100
   # ignore inventory title names and preview arts everywhere
@@ -59,6 +63,10 @@ pixelarts:
 ## Commands
 
 `/pixelart protect` - copy protect the art/banner
+
+`/pixelart show` - show the art in the main hand
+
+`/pixelart showall` - show all arts in the toolbar
 
 `/pixelart findduplicated <map id>` - find other maps with the same picture as the given map id
 
@@ -76,6 +84,12 @@ For commands:
 
 `pixelart.protect`
 
+`pixelart.show`
+
+`pixelart.showall`
+
+`pixelart.preview` - required to preview maps in show/showall
+
 `pixelart.findduplicated`
 
 `pixelart.blacklist`
@@ -85,3 +99,5 @@ For commands:
 Other:
 
 `pixelart.bypassloom` - bypass loom requirements
+
+`pixelart.show.cooldownbypass` - bypass show/showall cooldown
