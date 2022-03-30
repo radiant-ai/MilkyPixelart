@@ -158,7 +158,7 @@ public class PixelartManager extends ArtManager {
         }
         Component message = LangManager.getInstance().getLang(
                 "pixelarts.showMessage", player.getName(), MiniMessage.miniMessage().serialize(component));
-        MilkyPixelart.getInstance().getServer().broadcast(message);
+        MilkyPixelart.getInstance().getServer().broadcast(message, "pixelart.preview");
         putOnCooldown(player.getUniqueId());
     }
 
