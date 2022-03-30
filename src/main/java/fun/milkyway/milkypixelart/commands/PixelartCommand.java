@@ -105,6 +105,24 @@ public class PixelartCommand extends BaseCommand {
                 )
                 .append(
                         Component.newline()
+                )
+                .append(
+                        Component.text("/art show").color(TextColor.fromHexString("#9AFF0F"))
+                )
+                .append(
+                        Component.text("- показать всем онлайн игрокам ваш арт в руке").color(TextColor.fromHexString("#FFFF99"))
+                )
+                .append(
+                        Component.newline()
+                )
+                .append(
+                        Component.text("/art showall").color(TextColor.fromHexString("#9AFF0F"))
+                )
+                .append(
+                        Component.text("- показать всем онлайн игрокам ваши арты в нижнем ряде инвертаря").color(TextColor.fromHexString("#FFFF99"))
+                )
+                .append(
+                        Component.newline()
                 );
         if (commandSender.hasPermission("pixelart.fix")) {
             componentBuilder.append(
@@ -191,6 +209,27 @@ public class PixelartCommand extends BaseCommand {
             }
         }
         player.sendMessage(Component.text("Не удалось исправить защищенный предмет!").color(TextColor.fromHexString("#FF995E")));
+    }
+
+    @CommandPermission("pixelart.preview")
+    @Subcommand("preview")
+    @CommandCompletion("номер_карты")
+    public void onPreview(Player player, Integer mapId) {
+        PixelartManager.getInstance().renderArt(player, mapId);
+    }
+
+    @CommandPermission("pixelart.show")
+    @Subcommand("show")
+    @CommandCompletion("номер_карты")
+    public void onShow(Player player) {
+        PixelartManager.getInstance().showMaps(player, false);
+    }
+
+    @CommandPermission("pixelart.showall")
+    @Subcommand("showall")
+    @CommandCompletion("номер_карты")
+    public void onShowAll(Player player) {
+        PixelartManager.getInstance().showMaps(player, true);
     }
 
     @CommandPermission("pixelart.reload")

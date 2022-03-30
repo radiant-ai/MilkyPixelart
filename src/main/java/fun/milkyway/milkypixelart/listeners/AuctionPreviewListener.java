@@ -33,39 +33,11 @@ public class AuctionPreviewListener implements Listener {
 
                 ItemStack stack = event.getCurrentItem();
 
-                renderArt(player, stack);
+                PixelartManager.getInstance().renderArt(player, stack);
 
                 player.closeInventory();
                 event.setCancelled(true);
             }
         }
-    }
-
-    private void renderArt(Player player, ItemStack stack) {
-        UUID playerUUID = player.getUniqueId();
-        PixelartManager pixelartManager = PixelartManager.getInstance();
-        pixelartManager.renderArtToUser(player, stack).thenAccept(result -> {
-            Bukkit.getScheduler().runTask(MilkyPixelart.getInstance(), () -> {
-                Player player1 = Bukkit.getPlayer(playerUUID);
-
-                if (player1 == null || !player1.isOnline()) {
-                    return;
-                }
-
-                if (result) {
-                    if (player1.getVehicle() != null) {
-                        player1.leaveVehicle();
-                    }
-                    Location l = player1.getLocation();
-                    l.setPitch(0);
-                    l.setYaw(Utils.alignYaw(l));
-                    player1.teleport(l);
-                    player1.sendActionBar(Component.text("Включен предпросмотр!").color(NamedTextColor.GREEN));
-                }
-                else {
-                    player1.sendActionBar(Component.text("Ошибка предпросмотра!").color(NamedTextColor.RED));
-                }
-            });
-        });
     }
 }
