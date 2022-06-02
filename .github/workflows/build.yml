@@ -14,7 +14,8 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-      - name: Chache server jar
+          cache: maven
+      - name: Cache server jar
         id: cache-server-jar
         uses: actions/cache@v3
         with:
@@ -26,6 +27,6 @@ jobs:
       - name: Install jar to server
         run: |
           java -jar ${{ env.mc_version }}.jar nogui
-          mvn install:install-file -f pom_codeql.xml -Dfile="versions/${{ env.mc_version }}/purpur-${{ env.mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.mc_version }}" -Dpackaging=jar
+          mvn install:install-file -Dfile="versions/${{ env.mc_version }}/purpur-${{ env.mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.mc_version }}" -Dpackaging=jar
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
