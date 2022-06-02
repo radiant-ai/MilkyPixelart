@@ -1,5 +1,4 @@
 # MilkyPixelart
-![CodeQL](https://github.com/radiant-ai/MilkyPixelart/actions/workflows/codeql.yml/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/radiant-ai/milkypixelart/badge)](https://www.codefactor.io/repository/github/radiant-ai/milkypixelart)
 [![Maintainability](https://api.codeclimate.com/v1/badges/4dfb4edd6f9a4ace6b9e/maintainability)](https://codeclimate.com/github/radiant-ai/MilkyPixelart/maintainability)
 

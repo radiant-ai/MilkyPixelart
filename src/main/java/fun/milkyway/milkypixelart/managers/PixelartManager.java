@@ -7,6 +7,7 @@ import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
+import fun.milkyway.milkypixelart.listeners.MapCreateEvent;
 import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
@@ -56,8 +57,8 @@ public class PixelartManager extends ArtManager {
 
     public static final String BLACKLIST_FILENAME = "blacklist.yml";
 
-    private Map<Integer, ItemStack> previewMapKeys;
-    private Map<UUID, Long> lastShowMap;
+    private final Map<Integer, ItemStack> previewMapKeys;
+    private final Map<UUID, Long> lastShowMap;
 
     //SIGNLETON
     private PixelartManager() {
@@ -76,6 +77,7 @@ public class PixelartManager extends ArtManager {
         registerListener(new PixelartProtectionListener());
         registerListener(new AuctionPreviewListener());
         registerListener(new IllegitimateArtListener());
+        registerListener(new MapCreateEvent());
     }
 
     public synchronized static @NotNull PixelartManager getInstance() {
