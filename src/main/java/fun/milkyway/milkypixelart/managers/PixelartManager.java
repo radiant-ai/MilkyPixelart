@@ -7,7 +7,7 @@ import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
-import fun.milkyway.milkypixelart.listeners.MapCreateEvent;
+import fun.milkyway.milkypixelart.listeners.MapCreateListener;
 import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
@@ -77,7 +77,7 @@ public class PixelartManager extends ArtManager {
         registerListener(new PixelartProtectionListener());
         registerListener(new AuctionPreviewListener());
         registerListener(new IllegitimateArtListener());
-        registerListener(new MapCreateEvent());
+        registerListener(new MapCreateListener());
     }
 
     public synchronized static @NotNull PixelartManager getInstance() {

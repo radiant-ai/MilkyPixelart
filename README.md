@@ -59,6 +59,8 @@ pixelarts:
     - "Auction"
     - "Market"
     - "Shop"
+  # disallow map creation if player has no access to block under their feet
+  respectRegionProtection: false
 ```
 ## Commands
 

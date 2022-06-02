@@ -19,3 +19,4 @@ pixelarts:
     - "Auction"
     - "Market"
     - "Shop"
+  respectRegionProtection: false
