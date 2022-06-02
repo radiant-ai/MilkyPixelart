@@ -18,14 +18,14 @@ jobs:
         id: cache-server-jar
         uses: actions/cache@v3
         with:
-          path: ${{ mc_version }}.jar
-          key: ${{ mc_version }}-server-jar
+          path: ${{ env.mc_version }}.jar
+          key: ${{ env.mc_version }}-server-jar
       - name: Download Minecraft server
         if: steps.cache-server-jar.outputs.cache-hit != 'true'
-        run: wget https://api.purpurmc.org/v2/purpur/${{ mc_version }}/latest/download -O server.jar
+        run: wget https://api.purpurmc.org/v2/purpur/${{ env.mc_version }}/latest/download -O ${{ env.mc_version }}.jar
       - name: Install jar to server
         run: |
-          java -jar server.jar nogui
-          mvn install:install-file -f pom_codeql.xml -Dfile="versions/${{mc_version}}/purpur-${{ mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ mc_version }}" -Dpackaging=jar
+          java -jar ${{ env.mc_version }}.jar nogui
+          mvn install:install-file -f pom_codeql.xml -Dfile="versions/${{ env.mc_version }}/purpur-${{ env.mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.mc_version }}" -Dpackaging=jar
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
