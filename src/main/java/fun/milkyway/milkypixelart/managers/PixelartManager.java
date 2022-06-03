@@ -14,9 +14,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.querz.nbt.io.NBTUtil;
@@ -139,7 +138,7 @@ public class PixelartManager extends ArtManager {
     public void showMaps(@NotNull Player player, boolean all) {
         long cooldown = getShowCooldown(player.getUniqueId());
         if (cooldown > 0 && !player.hasPermission("pixelart.show.cooldownbypass")) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<#FF995E>Вы еще не можете этого делать <#FFFF99>"+cooldown+" <#FF995E>секунд!"));
+            player.sendMessage(LangManager.getInstance().getLang("show.fail_cooldown", ""+cooldown));
             return;
         }
         Component component;
@@ -151,22 +150,22 @@ public class PixelartManager extends ArtManager {
         }
         if (component == null) {
             if (all) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<#FF995E>У вас нет действительных карт в нижних слотах инвертаря!"));
+                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_map"));
             }
             else {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<#FF995E>Вы держите в руке недействительную карту!"));
+                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_in_toolbar"));
             }
             return;
         }
         Component message = LangManager.getInstance().getLang(
-                "pixelarts.showMessage", player.getName(), MiniMessage.miniMessage().serialize(component));
+                "show.showmessage", player.getName(), MiniMessage.miniMessage().serialize(component));
         MilkyPixelart.getInstance().getServer().broadcast(message, "pixelart.preview");
         putOnCooldown(player.getUniqueId());
     }
 
     private Component buildSingleMapComponent(@NotNull Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
-        return createPreviewComponent(itemStack);
+        return createPreviewComponent(itemStack, player.getName());
     }
 
     private Component buildAllMapsComponent(@NotNull Player player) {
@@ -175,7 +174,7 @@ public class PixelartManager extends ArtManager {
         for (int i = 0; i < 9; i++) {
             ItemStack itemStack = player.getInventory().getItem(i);
             if (itemStack != null) {
-                Component component = createPreviewComponent(itemStack);
+                Component component = createPreviewComponent(itemStack, player.getName());
                 if (component != null) {
                     count++;
                     builder.append(component);
@@ -207,7 +206,7 @@ public class PixelartManager extends ArtManager {
         return (lastShowMap.get(uuid) - System.currentTimeMillis()) / 1000L + cooldown;
     }
 
-    private @Nullable Component createPreviewComponent(@NotNull ItemStack itemStack) {
+    private @Nullable Component createPreviewComponent(@NotNull ItemStack itemStack, @NotNull String name) {
         if (!itemStack.getType().equals(Material.FILLED_MAP)) {
             return null;
         }
@@ -219,19 +218,18 @@ public class PixelartManager extends ArtManager {
 
         TextComponent.Builder builder = Component.text();
         ItemMeta itemMeta = itemStack.getItemMeta();
-        builder.append(Component.text("<").color(TextColor.fromHexString("#8BFF33")));
-        if (itemMeta.hasDisplayName() && itemMeta.displayName() != null) {
-            Component displayName = itemMeta.displayName();
+        if (itemMeta != null && itemMeta.hasDisplayName() && itemMeta.displayName() != null) {
+            var displayName = itemMeta.displayName();
             if (displayName != null) {
-                displayName = displayName.color(TextColor.fromHexString("#8BFF33"));
-                builder.append(displayName);
+                builder.append(LangManager.getInstance().getLang("show.map_component",
+                        PlainTextComponentSerializer.plainText().serialize(displayName)));
             }
         }
         else {
-            builder.append(Component.text("Арт").color(NamedTextColor.WHITE));
+            builder.append(LangManager.getInstance().getLang("show.map_component",
+                    PlainTextComponentSerializer.plainText().serialize(Component.translatable(Material.FILLED_MAP.translationKey()))));
         }
-        builder.append(Component.text(">").color(TextColor.fromHexString("#8BFF33")));
-        builder.hoverEvent(HoverEvent.showText(Component.text("Нажмите для предпросмотра").color(TextColor.fromHexString("#8BFF33"))));
+        builder.hoverEvent(HoverEvent.showText(LangManager.getInstance().getLang("show.click_to_preview", name)));
         builder.clickEvent(ClickEvent.runCommand("/"+ CommandAddons.getAnyAlias()+" preview "+mapMeta.getMapView().getId()));
         return builder.build();
     }
@@ -264,10 +262,10 @@ public class PixelartManager extends ArtManager {
                     l.setPitch(0);
                     l.setYaw(Utils.alignYaw(l));
                     player1.teleport(l);
-                    player1.sendActionBar(Component.text("Включен предпросмотр!").color(NamedTextColor.GREEN));
+                    player1.sendActionBar(LangManager.getInstance().getLang("preview.success"));
                 }
                 else {
-                    player1.sendActionBar(Component.text("Ошибка предпросмотра!").color(NamedTextColor.RED));
+                    player1.sendActionBar(LangManager.getInstance().getLang("preview.fail"));
                 }
             });
         });

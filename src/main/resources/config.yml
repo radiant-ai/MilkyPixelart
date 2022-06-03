@@ -1,8 +1,3 @@
-common:
-  copyrightText: "<#FFFF99>Protected from duplication"
-  copyrightAuthorName: "<#FFFF99>© <#9AFF0F><arg1>"
-  copyrightLegacyStrings:
-    - "Copyrighted by"
 commands:
   aliases:
     - pixelart
@@ -12,7 +7,6 @@ banners:
   copyrightPrice: 20
 pixelarts:
   showArtCooldown: 300
-  showMessage: "<#9AFF0F><arg1> <#FFFF99>показывает всем свои арты: <arg2>"
   copyrightPrice: 100
   previewEverywhere: false
   previewInventories:

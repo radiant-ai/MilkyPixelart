@@ -1,8 +1,7 @@
 package fun.milkyway.milkypixelart.listeners;
 
 import fun.milkyway.milkypixelart.MilkyPixelart;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,8 +35,7 @@ public class MapCreateListener implements Listener {
         }
 
         event.setCancelled(true);
-        event.getPlayer().sendMessage(Component.text("Вы не можете создавать карты тут.")
-                .color(TextColor.fromHexString("#FF995E")));
+        event.getPlayer().sendActionBar(LangManager.getInstance().getLang("region_protection.pixelart.fail_no_access"));
     }
 
     private boolean canBuild(@NotNull Player player) {

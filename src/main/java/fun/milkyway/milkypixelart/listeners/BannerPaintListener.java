@@ -4,11 +4,10 @@ package fun.milkyway.milkypixelart.listeners;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.utils.BannerUtils;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -57,19 +56,19 @@ public class BannerPaintListener implements Listener {
         event.setCancelled(false);
 
         if (!isLoomNearby(block) && !hasLoom(player)) {
-            player.sendActionBar(Component.text("Вы должны делать это у ткацкого станка или иметь один у себя в инвертаре!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_need_loom"));
             return;
         }
 
         if (!hasBlockAccess(block, player)) {
-            player.sendActionBar(Component.text("Вы не можете редактировать баннер тут!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_no_access"));
             return;
         }
 
         CopyrightManager.Author author = BannerManager.getInstance().getAuthor(block);
 
         if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-            player.sendActionBar(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_protected"));
             return;
         }
 
@@ -98,23 +97,23 @@ public class BannerPaintListener implements Listener {
         event.setCancelled(false);
 
         if (!hasBlockAccess(block, player)) {
-            player.sendActionBar(Component.text("Вы не можете редактировать баннер тут!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.erase.fail_no_access"));
             return;
         }
 
         CopyrightManager.Author author = BannerManager.getInstance().getAuthor(block);
 
         if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-            player.sendActionBar(Component.text("Вы не можете убирать узоры на чужих баннерах!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.erase.fail_protected"));
             return;
         }
 
         if (!BannerManager.getInstance().eraseTopPattern(block)) {
-            player.sendActionBar(Component.text("Тут нечего очищать!").color(TextColor.fromHexString("#FF995E")));
+            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.erase.fail_no_pattern"));
             return;
         }
 
-        player.sendActionBar(Component.text("Узор очищен.").color(TextColor.fromHexString("#9AFF0F")));
+        player.sendActionBar(LangManager.getInstance().getLang("banner_paint.erase.success"));
         player.playSound(Sound.sound(Key.key(Key.MINECRAFT_NAMESPACE, "block.composter.ready"), Sound.Source.BLOCK, 0.5f, 1.2f));
         player.getInventory().removeItem(new ItemStack(Material.PHANTOM_MEMBRANE, 1));
     }

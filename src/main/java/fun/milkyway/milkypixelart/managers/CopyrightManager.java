@@ -1,6 +1,5 @@
 package fun.milkyway.milkypixelart.managers;
 
-import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -136,12 +135,12 @@ public class CopyrightManager {
         }
 
         if (lore != null) {
-            Component line = LangManager.getInstance().getLang("common.copyrightText");
+            Component line = LangManager.getInstance().getLang("copyright.title");
             if (!line.hasDecoration(TextDecoration.ITALIC)) { //we need to allow explicit italics, but still remove the default one
                 line = line.decoration(TextDecoration.ITALIC, false);
             }
             lore.add(line);
-            line = LangManager.getInstance().getLang("common.copyrightAuthorName", name == null ? "" : name);
+            line = LangManager.getInstance().getLang("copyright.author", name == null ? "" : name);
             if (!line.hasDecoration(TextDecoration.ITALIC)) {
                 line = line.decoration(TextDecoration.ITALIC, false);
             }
@@ -165,9 +164,9 @@ public class CopyrightManager {
             ListIterator<Component> iterator = lore.listIterator();
             while(iterator.hasNext()){
                 String line = PlainTextComponentSerializer.plainText().serialize(iterator.next());
-                if(Utils.containsAny(line, MilkyPixelart.getInstance().getConfiguration().getStringList("common.copyrightLegacyStrings"))
-                        || line.contains(LangManager.getInstance().getLangPlain("common.copyrightText"))
-                        || line.contains(LangManager.getInstance().getLangPlain("common.copyrightAuthorName", ""))) {
+                if(Utils.containsAny(line, LangManager.getInstance().getLangPlainList("copyright.legacy"))
+                        || line.contains(LangManager.getInstance().getLangPlain("copyright.title"))
+                        || line.contains(LangManager.getInstance().getLangPlain("copyright.author", ""))) {
                     iterator.remove();
                 }
             }

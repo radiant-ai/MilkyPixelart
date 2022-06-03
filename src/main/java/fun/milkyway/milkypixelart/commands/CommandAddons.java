@@ -15,7 +15,7 @@ public class CommandAddons {
                 return UUID.fromString(context.popFirstArg());
             }
             catch (IllegalArgumentException e) {
-                throw new InvalidCommandArgument("Неверный UUID!");
+                throw new InvalidCommandArgument("Invalid UUID!");
             }
         });
     }

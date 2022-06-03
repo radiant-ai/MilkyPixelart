@@ -2,6 +2,7 @@ package fun.milkyway.milkypixelart.utils;
 
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.ArtManager;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -114,18 +115,8 @@ public class BannerUtils {
     public static @NotNull ItemStack generateInfoBook(@NotNull TextColor textColor) {
         ItemStack infoBook = new ItemStack(Material.BOOK, 1);
         ItemMeta bookMeta = infoBook.getItemMeta();
-        bookMeta.displayName(Component.text("Информация").color(textColor).decorate(TextDecoration.BOLD));
-        List<Component> bookLore = new ArrayList<>();
-        bookLore.add(Component.text("В этом меню вы можете добавлять до").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.text("16 узоров на выбранный вами баннер.").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.empty());
-        bookLore.add(Component.text("Не видите особые узоры по типу черепа?").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.text("Вам необходимо иметь их в инвератаре,").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.text("чтобы они появились в меню узоров.").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.empty());
-        bookLore.add(Component.text("Вы также можете очищать верхний").color(TextColor.fromHexString("#FFFF99")));
-        bookLore.add(Component.text("слой с помощью мембран фантомов.").color(TextColor.fromHexString("#FFFF99")));
-        bookMeta.lore(bookLore);
+        bookMeta.displayName(LangManager.getInstance().getLang("banner_paint.apply.menu.information.title").color(textColor));
+        bookMeta.lore(LangManager.getInstance().getLangList("banner_paint.apply.menu.information.lines"));
         infoBook.setItemMeta(bookMeta);
         return infoBook;
     }

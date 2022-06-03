@@ -168,21 +168,21 @@ public class BannerManager extends ArtManager {
                                 if (block.getState() instanceof Banner banner) {
                                     CopyrightManager.Author author = getAuthor(banner);
                                     if (author != null && !author.getUuid().equals(player.getUniqueId())) {
-                                        player.sendActionBar(Component.text("Вы не можете добавлять узоры на чужие баннеры!").color(TextColor.fromHexString("#FF995E")));
+                                        player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_protected"));
                                     }
                                     else {
                                         if (player.getInventory().contains(requiredDye)) {
                                             if (addPatternToBanner(block, pattern)) {
                                                 player.playSound(Sound.sound(Key.key(Key.MINECRAFT_NAMESPACE, "block.composter.empty"), Sound.Source.BLOCK, 0.5f, 1.0f));
-                                                player.sendActionBar(Component.text("Узор добавлен.").color(TextColor.fromHexString("#9AFF0F")));
+                                                player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.success"));
                                                 player.getInventory().removeItem(new ItemStack(requiredDye, 1));
                                             }
                                             else {
-                                                player.sendActionBar(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
+                                                player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_limit_reached"));
                                             }
                                         }
                                         else {
-                                            player.sendActionBar(Component.text("У вас не оказалось нужной краски!").color(TextColor.fromHexString("#FF995E")));
+                                            player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_dye_missing"));
                                         }
                                     }
                                 }
@@ -195,7 +195,7 @@ public class BannerManager extends ArtManager {
                 }
             }
             else {
-                player.sendActionBar(Component.text("Сюда больше нельзя ничего добавлять!").color(TextColor.fromHexString("#FF995E")));
+                player.sendActionBar(LangManager.getInstance().getLang("banner_paint.apply.fail_limit_reached"));
             }
             event.setCancelled(true);
             player.closeInventory();
@@ -234,8 +234,8 @@ public class BannerManager extends ArtManager {
 
     public void showPatternMenu(@NotNull Player player, @NotNull Block block, @NotNull DyeColor dyeColor) {
         TextColor textColor = BannerUtils.getTextColorFromDye(dyeColor);
-        Inventory inventory = Bukkit.createInventory(null, 54, Component.text("Наложение узора")
-                .color(textColor).decorate(TextDecoration.BOLD));
+        Inventory inventory = Bukkit.createInventory(null, 54,
+                LangManager.getInstance().getLang("banner_paint.apply.menu.title"));
         int count = 0;
         for (PatternType patternType : PatternType.values()) {
             if (patternType.equals(PatternType.BASE)) {
@@ -274,7 +274,7 @@ public class BannerManager extends ArtManager {
             }
             BannerMeta bannerMeta = (BannerMeta) banner.getItemMeta();
             bannerMeta.setPatterns(List.of(new Pattern(dyeColor, patternType)));
-            bannerMeta.displayName(Component.text("Узор").decorate(TextDecoration.ITALIC));
+            bannerMeta.displayName(LangManager.getInstance().getLang("banner_paint.apply.menu.pattern"));
             banner.setItemMeta(bannerMeta);
             inventory.setItem(count, banner);
             count++;

@@ -3,6 +3,7 @@ package fun.milkyway.milkypixelart.listeners;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.utils.MessageOnceManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -45,7 +46,7 @@ public class BannerProtectionListener implements Listener {
                     if (copiedBanner.getType().equals(clearbanner.getType())) {
                         if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                             inventory.setResult(null);
-                            player.sendMessage(Component.text("Вы не можете копировать чужие защищенные баннеры!").color(TextColor.fromHexString("#FF995E")));
+                            player.sendMessage(LangManager.getInstance().getLang("copy.banner.fail_not_your_banner"));
                         }
                         else {
                             ItemStack result = artManager.getUnprotectedCopy(copiedBanner);
@@ -53,7 +54,7 @@ public class BannerProtectionListener implements Listener {
                             inventory.setResult(result);
                             if (author != null) {
                                 messageOnceManager.sendMessageOnce(player,
-                                        Component.text("Помните, копии защищенных баннеров не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
+                                        LangManager.getInstance().getLang("copy.banner.unprotected_reminder"));
                             }
                         }
                     }

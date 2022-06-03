@@ -4,10 +4,9 @@ import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.ArtManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
+import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import fun.milkyway.milkypixelart.utils.MessageOnceManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,8 +32,7 @@ public class PixelartProtectionListener implements Listener {
             CraftingInventory inventory = event.getInventory();
             List<ItemStack> filledMaps = getFilledMapsFromCraft(inventory.getMatrix());
             if (filledMaps.stream().anyMatch(itemStack -> artManager.getAuthor(itemStack) != null)) {
-                player.sendMessage(Component.text("Работы с защищенными картами производятся только на столе картографа!")
-                        .color(TextColor.fromHexString("#FF995E")));
+                player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_need_cartography_table"));
                 inventory.setResult(null);
                 MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
                     Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
@@ -62,11 +60,11 @@ public class PixelartProtectionListener implements Listener {
                     result.setAmount(2);
                     event.setResult(result);
                     messageOnceManager.sendMessageOnce(player,
-                            Component.text("Помните, копии защищенных артов не являются защищенными!").color(TextColor.fromHexString("#FFFF99")));
+                            LangManager.getInstance().getLang("copy.pixelart.unprotected_reminder"));
                 }
                 else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);
-                    player.sendMessage(Component.text("Вы не можете копировать чужие защищенные пиксельарты!").color(TextColor.fromHexString("#FF995E")));
+                    player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_not_your_pixelart"));
                     MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
                         Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                         if (newPlayer != null) {

@@ -27,6 +27,7 @@ public final class MilkyPixelart extends JavaPlugin {
     private static MilkyPixelart instance;
     private Economy economy;
     private FileConfiguration configuration;
+    private FileConfiguration lang;
 
     private PaperCommandManager paperCommandManager;
     private PixelartCommand pixelartCommand;
@@ -40,7 +41,8 @@ public final class MilkyPixelart extends JavaPlugin {
         }
 
         try {
-            loadConfig();
+            configuration = loadConfig("config.yml");
+            lang = loadConfig("lang.yml");
         } catch (IOException e) {
             getLogger().log(Level.WARNING, e.getMessage(), e);
         }
@@ -91,24 +93,22 @@ public final class MilkyPixelart extends JavaPlugin {
         }
     }
 
-    public void loadConfig() throws IOException {
-        File configFile = new File(getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            getDataFolder().mkdir();
-            saveDefaultConfig();
-        }
-        InputStream defaultConfigStream = getResource("config.yml");
-        configuration = YamlConfiguration.loadConfiguration(configFile);
+    public FileConfiguration loadConfig(String fileName) throws IOException {
+        File configFile = new File(getDataFolder(), fileName);
+        InputStream defaultConfigStream = getResource(fileName);
+        var configuration = YamlConfiguration.loadConfiguration(configFile);
         if (defaultConfigStream != null) {
             configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defaultConfigStream, StandardCharsets.UTF_8)));
         }
         configuration.options().copyDefaults(true);
         configuration.save(configFile);
+        return configuration;
     }
 
     public CompletableFuture<Void> reload() {
         try {
-            loadConfig();
+            configuration = loadConfig("config.yml");
+            lang = loadConfig("lang.yml");
         } catch (IOException e) {
             getLogger().log(Level.WARNING, "Error occurred while reloading the plugin!", e);
         }
@@ -121,7 +121,6 @@ public final class MilkyPixelart extends JavaPlugin {
         pixelartCommand = new PixelartCommand();
         paperCommandManager.registerCommand(pixelartCommand);
 
-        CompletableFuture<MilkyPixelart> result = new CompletableFuture<>();
         CompletableFuture<Object> reload1 = PixelartManager.reload().handle((m, e) -> {
             if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading pixelart manager!", e);
             return m;
@@ -143,5 +142,9 @@ public final class MilkyPixelart extends JavaPlugin {
 
     public FileConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public FileConfiguration getLang() {
+        return lang;
     }
 }

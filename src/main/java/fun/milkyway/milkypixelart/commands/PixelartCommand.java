@@ -3,16 +3,14 @@ package fun.milkyway.milkypixelart.commands;
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
 import fun.milkyway.milkypixelart.MilkyPixelart;
-import fun.milkyway.milkypixelart.managers.ArtManager;
-import fun.milkyway.milkypixelart.managers.BannerManager;
-import fun.milkyway.milkypixelart.managers.CopyrightManager;
-import fun.milkyway.milkypixelart.managers.PixelartManager;
+import fun.milkyway.milkypixelart.managers.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,119 +25,24 @@ import java.util.UUID;
 public class PixelartCommand extends BaseCommand {
 
     private final MilkyPixelart plugin;
+    private final Component pluginTitleComponent;
 
     public PixelartCommand() {
         this.plugin = MilkyPixelart.getInstance();
+        pluginTitleComponent = MiniMessage.miniMessage()
+                .deserialize(" \n<#FFFF99><bold>"+plugin.getName()+"</bold> <#FFFF99>v"+plugin.getDescription().getVersion()+"by <#9AFF0F>Radiant");
     }
 
     @Default
     @CatchUnknown
     @Subcommand("help")
     public void onHelpCommand(CommandSender commandSender) {
-        TextComponent.Builder componentBuilder = Component.text()
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text(plugin.getName()).color(TextColor.fromHexString("#FFFF99")).decorate(TextDecoration.BOLD)
-                )
-                .append(
-                        Component.text(" ")
-                )
-                .append(
-                        Component.text(plugin.getDescription().getVersion()).color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.text(" by Radiant").color(TextColor.fromHexString("#9AFF0F"))
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("Плагин позволяет вам защищать ваши авторские баннеры и пиксельарты на картах. А также просматривать арты прямо на рынке.").color(TextColor.fromHexString("#CDCD6E")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("Также вы можете добавлять до 16 дополнительных узоров на баннеры нажав на них ПКМ и держа нужную краску в руках.").color(TextColor.fromHexString("#CDCD6E")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("Стоимость защиты пиксельарта: ").color(TextColor.fromHexString("#FFFF99")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.text(PixelartManager.getInstance().getProtectionCost()+"$").color(TextColor.fromHexString("#9AFF0F")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("Стоимость защиты баннера: ").color(TextColor.fromHexString("#FFFF99")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.text(BannerManager.getInstance().getProtectionCost()+"$").color(TextColor.fromHexString("#9AFF0F")).decorate(TextDecoration.ITALIC)
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("/art protect").color(TextColor.fromHexString("#9AFF0F"))
-                )
-                .append(
-                        Component.text("- защитить предмет в руке, деньги будут списаны сразу и за все предметы").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("/art show").color(TextColor.fromHexString("#9AFF0F"))
-                )
-                .append(
-                        Component.text("- показать всем онлайн игрокам ваш арт в руке").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.newline()
-                )
-                .append(
-                        Component.text("/art showall").color(TextColor.fromHexString("#9AFF0F"))
-                )
-                .append(
-                        Component.text("- показать всем онлайн игрокам ваши арты в нижнем ряде инвертаря").color(TextColor.fromHexString("#FFFF99"))
-                )
-                .append(
-                        Component.newline()
-                );
-        if (commandSender.hasPermission("pixelart.fix")) {
-            componentBuilder.append(
-                            Component.text("/art fix").color(TextColor.fromHexString("#9AFF0F"))
-                    )
-                    .append(
-                            Component.text("- исправить предмет, если вы больше не можете его копировать после переноса базы данных").color(TextColor.fromHexString("#FFFF99"))
-                    )
-                    .append(
-                            Component.newline()
-                    );
-        }
-
-        componentBuilder.append(
-                        Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99"))
-                );
-        commandSender.sendMessage(componentBuilder.build());
+        commandSender.sendMessage(pluginTitleComponent);
+        LangManager.getInstance().getLangList("help.commands").forEach(commandSender::sendMessage);
+        commandSender.sendMessage(LangManager.getInstance().getLang("help.prices.pixelart",
+                ""+PixelartManager.getInstance().getProtectionCost()));
+        commandSender.sendMessage(LangManager.getInstance().getLang("help.prices.banner",
+                ""+BannerManager.getInstance().getProtectionCost()));
     }
 
     @CommandPermission("pixelart.protect")
@@ -155,7 +58,7 @@ public class PixelartCommand extends BaseCommand {
             protectionManager = BannerManager.getInstance();
         }
         else {
-            player.sendMessage(Component.text("Вы должны держать пиксельарт или баннер в руке!").color(TextColor.fromHexString("#FF995E")));
+            player.sendMessage(LangManager.getInstance().getLang("common.should_hold"));
             return;
         }
 
@@ -165,22 +68,18 @@ public class PixelartCommand extends BaseCommand {
             if (plugin.getEconomy().getBalance(player)>=price) {
                 if (protectionManager.protect(player, item)) {
                     plugin.getEconomy().withdrawPlayer(player, price);
-                    player.sendMessage(
-                            Component.text("Вы защитили ваше творение! Денег списано: "+price+"$")
-                                    .color(TextColor.fromHexString("#9AFF0F")));
+                    player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
                 }
                 else {
-                    player.sendMessage(Component.text("Не удалось защитить предмет, на нём точно есть, что защищать?").color(TextColor.fromHexString("#FF995E")));
+                    player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
                 }
             }
             else {
-                player.sendMessage(
-                        Component.text("У вас недостаточно денег для установки защиты от копирования, вам нужно: "+price+"$")
-                                .color(TextColor.fromHexString("#FF995E")));
+                player.sendMessage(LangManager.getInstance().getLang("protect.not_enough_money", ""+price));
             }
         }
         else {
-            player.sendMessage(Component.text("Этот предмет уже защищен!").color(TextColor.fromHexString("#FF995E")));
+            player.sendMessage(LangManager.getInstance().getLang("protect.already_protected"));
         }
     }
 
@@ -235,8 +134,8 @@ public class PixelartCommand extends BaseCommand {
     @CommandPermission("pixelart.reload")
     @Subcommand("reload")
     public void onReload(CommandSender commandSender) {
-        commandSender.sendMessage(Component.text("Перезагружаем плагин...").color(TextColor.fromHexString("#FFFF99")));
-        MilkyPixelart.getInstance().reload().thenRun(() -> commandSender.sendMessage(Component.text("Плагин перезагружен!").color(TextColor.fromHexString("#9AFF0F"))));
+        commandSender.sendMessage(LangManager.getInstance().getLang("reload.reloading"));
+        MilkyPixelart.getInstance().reload().thenRun(() -> commandSender.sendMessage(LangManager.getInstance().getLang("reload.success")));
     }
 
     @Subcommand("blacklist")

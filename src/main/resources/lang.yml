@@ -1,0 +1,77 @@
+copyright:
+  title: "<#FFFF99>Protected from duplication"
+  author: "<#FFFF99>© <#9AFF0F><arg1>"
+  legacy:
+    - "Copyrighted by"
+show:
+  message: "<#9AFF0F><arg1> <#FFFF99>shows their pixel arts to everyone: <arg2>"
+  map_component: "<#9AFF0F>\<<arg1>\>"
+  click_to_preview: "<#9AFF0F>Click here to preview <#FFFF99>'s pixel art"
+  fail_no_map: "<#9AFF0F>You should hold a pixel art map in your hand to show it to others."
+  fail_no_in_toolbar: "<#9AFF0F>You should have at least one pixel art in your toolbar to show it to others."
+  fail_cooldown: "<#9AFF0F>You can't show your pixel art for another <arg1> seconds."
+preview:
+  success: "<#9AFF0F>Previewing the pixel art."
+  fail: "<#FF995E>Failed to preview the pixel art."
+protect:
+  fail_should_hold: "<#FF995E>You should hold pixel art map or a banner in your hand!"
+  fail_already_protected: "<#FF995E>This item is already protected!"
+  fail_nothing_to_protect: "<#FF995E>Nothing to protect here..."
+  fail_not_enough_money: "<#FF995E>You have not enough money. You need: <#FFFF99><arg1>$"
+  success: "<#9AFF0F>You've protected your masterpiece! Money spent: <#FFFF99><arg1>$"
+copy:
+  banner:
+    unprotected_reminder: "<#FFFF99>Remember! Copies of protected banners are not protected!"
+    fail_not_your_banner: "<#FF995E>You can't copy banner protected by someone else!"
+  pixelart:
+    fail_not_your_pixelart: "<#FF995E>You can't copy pixel art protected by someone else!"
+    fail_need_cartography_table: "<#FF995E>You need cartography table to copy pixel art!"
+    unprotected_reminder: "<#FFFF99>Remember! Copies of protected pixel arts are not protected!"
+banner_paint:
+  apply:
+    fail_no_access: "<#FF995E>You can't apply patterns to the banner here!"
+    fail_need_loom: "<#FF995E>You need loom nearby or in your inventory to apply patterns to the banner!"
+    fail_protected: "<#FF995E>You can't apply patterns to the banner protected by someone else!"
+    fail_limit_reached: "<#FF995E>You can't apply more patterns to the banner!"
+    fail_dye_missing: "<#FF995E>You no longer have required dye!"
+    success: "<#9AFF0F>You've applied a pattern to the banner."
+    menu:
+      title: "<bold>Applying a pattern"
+      pattern: "<italic>Pattern"
+      information:
+        title: "<bold>Information"
+        lines:
+          - "<#FFFF99>Through this menu you can apply"
+          - "<#FFFF99>up to 16 patterns to the banner."
+          - ""
+          - "<#FFFF99>Cannot see special patterns?"
+          - "<#FFFF99>You need to have them in your inventory,"
+          - "<#FFFF99>so you can see them in the menu."
+          - ""
+          - "<#FFFF99>You can also erase the topmost pattern"
+          - "<#FFFF99>by applying phantom membrane"
+  erase:
+    fail_no_access: "<#FF995E>You can't erase patterns from the banner here!"
+    fail_protected: "<#FF995E>You can't erase patterns from the banner protected by someone else!"
+    fail_no_patterns: "<#FF995E>There are no patterns to erase!"
+    success: "<#9AFF0F>You've erased a pattern from the banner."
+region_protection:
+  pixelart:
+    fail_no_access: "<#FF995E>You can't create a map here!"
+reload:
+  reloading: "<#FFFF99>Reloading the plugin..."
+  success: "<#9AFF0F>Plugin reloaded successfully."
+help:
+  commands:
+    - ""
+    - "<#9AFF0F>/art protect <#FFFF99>- protect your banner or pixel art from duplication"
+    - "<#9AFF0F>/art show <#FFFF99>- show off your art to everyone in the chat"
+    - "<#9AFF0F>/art showall <#FFFF99>- show off all your arts in the toolbar"
+    - ""
+    - "<#9AFF0F>- <#FFFF99>Create banners with up to 16 patterns, just right click on a banner with a dye in hands"
+    - "<#9AFF0F>- <#FFFF99>Preview pixel arts right from the market GUI, just right click on the map in inventory view"
+    - "<#9AFF0F>- <#FFFF99>Prevent players from creating maps in protected regions (regions should reach the maximum height)"
+    - ""
+  prices:
+    pixelart: "<#9AFF0F>Protect pixel art <#FFFF99>- <#9AFF0F><arg1>$"
+    banner: "<#9AFF0F>Protect banner <#FFFF99>- <#9AFF0F><arg1>$"
