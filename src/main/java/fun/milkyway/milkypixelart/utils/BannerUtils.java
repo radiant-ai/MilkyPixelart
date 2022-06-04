@@ -112,10 +112,10 @@ public class BannerUtils {
         return textColor != null ? textColor : NamedTextColor.BLACK;
     }
 
-    public static @NotNull ItemStack generateInfoBook(@NotNull TextColor textColor) {
+    public static @NotNull ItemStack generateInfoBook() {
         ItemStack infoBook = new ItemStack(Material.BOOK, 1);
         ItemMeta bookMeta = infoBook.getItemMeta();
-        bookMeta.displayName(LangManager.getInstance().getLang("banner_paint.apply.menu.information.title").color(textColor));
+        bookMeta.displayName(LangManager.getInstance().getLang("banner_paint.apply.menu.information.title"));
         bookMeta.lore(LangManager.getInstance().getLangList("banner_paint.apply.menu.information.lines"));
         infoBook.setItemMeta(bookMeta);
         return infoBook;

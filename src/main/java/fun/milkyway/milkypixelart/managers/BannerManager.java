@@ -289,7 +289,7 @@ public class BannerManager extends ArtManager {
                 inventory.setItem(i, blackStainedGlass);
             }
         }
-        inventory.setItem(49, BannerUtils.generateInfoBook(textColor));
+        inventory.setItem(49, BannerUtils.generateInfoBook());
         InventoryView inventoryView = player.openInventory(inventory);
         bannerEditorMenus.put(inventoryView, block);
     }

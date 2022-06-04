@@ -5,11 +5,12 @@ copyright:
     - "Copyrighted by"
 show:
   message: "<#9AFF0F><arg1> <#FFFF99>shows their pixel arts to everyone: <arg2>"
-  map_component: "<#9AFF0F>\<<arg1>\>"
-  click_to_preview: "<#9AFF0F>Click here to preview <#FFFF99>'s pixel art"
-  fail_no_map: "<#9AFF0F>You should hold a pixel art map in your hand to show it to others."
-  fail_no_in_toolbar: "<#9AFF0F>You should have at least one pixel art in your toolbar to show it to others."
-  fail_cooldown: "<#9AFF0F>You can't show your pixel art for another <arg1> seconds."
+  map_component: "<#9AFF0F>[<arg1>]"
+  map_default_name: "Pixel Art"
+  click_to_preview: "<#9AFF0F>Click here to preview <#FFFF99><arg1><#9AFF0F>'s pixel art"
+  fail_no_map: "<#FF995E>You should hold a pixel art map in your hand to show it to others."
+  fail_no_in_toolbar: "<#FF995E>You should have at least one pixel art in your toolbar to show it to others."
+  fail_cooldown: "<#FF995E>You can't show your pixel art for another <arg1> seconds."
 preview:
   success: "<#9AFF0F>Previewing the pixel art."
   fail: "<#FF995E>Failed to preview the pixel art."
@@ -19,6 +20,18 @@ protect:
   fail_nothing_to_protect: "<#FF995E>Nothing to protect here..."
   fail_not_enough_money: "<#FF995E>You have not enough money. You need: <#FFFF99><arg1>$"
   success: "<#9AFF0F>You've protected your masterpiece! Money spent: <#FFFF99><arg1>$"
+scan:
+  success: ""
+blacklist:
+  add:
+    success: "<#9AFF0F>You've added <#FFFF99><arg1><#9AFF0F> to the blacklist."
+    fail: "<#FF995E>Failed to add <#FFFF99><arg1><#FF995E> to the blacklist."
+  remove:
+    success: "<#9AFF0F>You've removed <#FFFF99><arg1><#9AFF0F> from the blacklist."
+    fail: "<#FF995E>Failed to remove <#FFFF99><arg1><#FF995E> from the blacklist."
+  list:
+    header: "<#9AFF0F>Blacklist"
+    empty: "<#9AFF0F>The blacklist is empty."
 copy:
   banner:
     unprotected_reminder: "<#FFFF99>Remember! Copies of protected banners are not protected!"
@@ -36,7 +49,7 @@ banner_paint:
     fail_dye_missing: "<#FF995E>You no longer have required dye!"
     success: "<#9AFF0F>You've applied a pattern to the banner."
     menu:
-      title: "<bold>Applying a pattern"
+      title: "<#FFFF99><bold>Applying a pattern"
       pattern: "<italic>Pattern"
       information:
         title: "<bold>Information"

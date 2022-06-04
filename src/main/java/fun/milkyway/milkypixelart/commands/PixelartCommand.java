@@ -30,7 +30,7 @@ public class PixelartCommand extends BaseCommand {
     public PixelartCommand() {
         this.plugin = MilkyPixelart.getInstance();
         pluginTitleComponent = MiniMessage.miniMessage()
-                .deserialize(" \n<#FFFF99><bold>"+plugin.getName()+"</bold> <#FFFF99>v"+plugin.getDescription().getVersion()+"by <#9AFF0F>Radiant");
+                .deserialize(" \n<#FFFF99><bold>"+plugin.getName()+"</bold> <#9AFF0F>"+plugin.getDescription().getVersion()+" by <#9AFF0F>Radiant");
     }
 
     @Default
@@ -58,7 +58,7 @@ public class PixelartCommand extends BaseCommand {
             protectionManager = BannerManager.getInstance();
         }
         else {
-            player.sendMessage(LangManager.getInstance().getLang("common.should_hold"));
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_should_hold"));
             return;
         }
 
@@ -75,16 +75,17 @@ public class PixelartCommand extends BaseCommand {
                 }
             }
             else {
-                player.sendMessage(LangManager.getInstance().getLang("protect.not_enough_money", ""+price));
+                player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
             }
         }
         else {
-            player.sendMessage(LangManager.getInstance().getLang("protect.already_protected"));
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_already_protected"));
         }
     }
 
     @CommandPermission("pixelart.findduplicated")
     @Subcommand("findduplicated")
+    @CommandAlias("scan")
     public void onFindDuplicates(CommandSender commandSender, Integer mapId) {
         PixelartManager.getInstance().getDuplicates(commandSender, mapId).thenAccept(list -> {
             commandSender.sendMessage(ChatColor.GREEN+"Найдено "+list.size()+" дубликатов:");
@@ -147,7 +148,7 @@ public class PixelartCommand extends BaseCommand {
         }
 
         @Subcommand("add")
-        @CommandCompletion("номер_карты uuid_владельца")
+        @CommandCompletion("mad_id owner_uuid")
         public void onAdd(CommandSender commandSender, Integer mapId, UUID uuid) {
             PixelartManager.getInstance().blacklistAdd(mapId, uuid);
             TextComponent.Builder builder = Component.text();
@@ -159,7 +160,7 @@ public class PixelartCommand extends BaseCommand {
         }
 
         @Subcommand("remove")
-        @CommandCompletion("номер_карты")
+        @CommandCompletion("mad_id")
         public void onRemove(CommandSender commandSender, Integer mapId) {
             if (PixelartManager.getInstance().blacklistRemove(mapId) != null) {
                 commandSender.sendMessage(
@@ -172,7 +173,7 @@ public class PixelartCommand extends BaseCommand {
         }
 
         @Subcommand("list")
-        @CommandCompletion("страница")
+        @CommandCompletion("page_number")
         public void onList(CommandSender commandSender, @Default("1") Integer page) {
             page = page < 1 ? 1 : page;
             ArrayList<Map.Entry<Integer, UUID>> list = PixelartManager.getInstance().blacklistList();

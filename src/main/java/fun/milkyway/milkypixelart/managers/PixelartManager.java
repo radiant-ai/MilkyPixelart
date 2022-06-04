@@ -150,15 +150,15 @@ public class PixelartManager extends ArtManager {
         }
         if (component == null) {
             if (all) {
-                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_map"));
+                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_in_toolbar"));
             }
             else {
-                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_in_toolbar"));
+                player.sendMessage(LangManager.getInstance().getLang("show.fail_no_map"));
             }
             return;
         }
         Component message = LangManager.getInstance().getLang(
-                "show.showmessage", player.getName(), MiniMessage.miniMessage().serialize(component));
+                "show.message", player.getName(), MiniMessage.miniMessage().serialize(component));
         MilkyPixelart.getInstance().getServer().broadcast(message, "pixelart.preview");
         putOnCooldown(player.getUniqueId());
     }
@@ -227,7 +227,7 @@ public class PixelartManager extends ArtManager {
         }
         else {
             builder.append(LangManager.getInstance().getLang("show.map_component",
-                    PlainTextComponentSerializer.plainText().serialize(Component.translatable(Material.FILLED_MAP.translationKey()))));
+                    LangManager.getInstance().getLangPlain("show.map_default_name")));
         }
         builder.hoverEvent(HoverEvent.showText(LangManager.getInstance().getLang("show.click_to_preview", name)));
         builder.clickEvent(ClickEvent.runCommand("/"+ CommandAddons.getAnyAlias()+" preview "+mapMeta.getMapView().getId()));
