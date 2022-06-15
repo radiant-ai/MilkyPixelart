@@ -5,11 +5,7 @@ import co.aikar.commands.annotation.*;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -151,24 +147,17 @@ public class PixelartCommand extends BaseCommand {
         @CommandCompletion("mad_id owner_uuid")
         public void onAdd(CommandSender commandSender, Integer mapId, UUID uuid) {
             PixelartManager.getInstance().blacklistAdd(mapId, uuid);
-            TextComponent.Builder builder = Component.text();
-            builder.append(Component.text("Карта ").color(TextColor.fromHexString("#FFFF99")))
-                    .append(Component.text(mapId).color(TextColor.fromHexString("#9AFF0F")))
-                    .append(Component.text(" была добавлена в черный список с настоящим владельцем ").color(TextColor.fromHexString("#FFFF99")))
-                    .append(Component.text(uuid.toString()).color(TextColor.fromHexString("#9AFF0F")));
-            commandSender.sendMessage(builder.build());
+            commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.add.success", ""+mapId, uuid.toString()));
         }
 
         @Subcommand("remove")
         @CommandCompletion("mad_id")
         public void onRemove(CommandSender commandSender, Integer mapId) {
             if (PixelartManager.getInstance().blacklistRemove(mapId) != null) {
-                commandSender.sendMessage(
-                        Component.text("Карта "+mapId+" была удалена из черного списка")
-                                .color(TextColor.fromHexString("#9AFF0F")));
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.remove.success", ""+mapId));
             }
             else {
-                commandSender.sendMessage(Component.text("Эта карта не в черном списке!").color(TextColor.fromHexString("#FF995E")));
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.remove.fail_not_on_list", ""+mapId));
             }
         }
 
@@ -178,51 +167,24 @@ public class PixelartCommand extends BaseCommand {
             page = page < 1 ? 1 : page;
             ArrayList<Map.Entry<Integer, UUID>> list = PixelartManager.getInstance().blacklistList();
             if (list.isEmpty()) {
-                commandSender.sendMessage(Component.text("Черный список пуст").color(TextColor.fromHexString("#FFFF99")));
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.list.empty"));
             }
             else {
                 int PER_PAGE = 12;
                 int pages = (list.size() - 1) / PER_PAGE + 1;
                 page = page > pages ? pages : page;
 
-                commandSender.sendMessage(Component.text()
-                        .append(Component.newline())
-                        .append(Component.text("Черный список: ").color(TextColor.fromHexString("#FFFF99"))
-                                .decorate(TextDecoration.BOLD))
-                        .append(Component.newline())
-                        .append(Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99")))
-                        .build());
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.list.header"));
 
-                TextComponent.Builder builder = Component.text();
                 for (int i = (page - 1) * PER_PAGE; i < page * PER_PAGE && i < list.size(); i++) {
 
                     int id = list.get(i).getKey();
                     String uuid = list.get(i).getValue().toString();
 
-                    builder.append(Component.text("X").color(TextColor.fromHexString("#FF995E"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Удалить").color(TextColor.fromHexString("#FF995E"))))
-                            .clickEvent(ClickEvent.runCommand("/pixelart blacklist remove "+id)));
-                    builder.append(Component.text(" - ").color(TextColor.fromHexString("#FFFF99")));
-                    builder.append(Component.text(String.format("%08d ", id)).color(TextColor.fromHexString("#9AFF0F"))
-                            .hoverEvent(HoverEvent.showText(Component.text("Номер карты").color(TextColor.fromHexString("#9AFF0F")))));
-                    builder.append(Component.text(uuid).color(TextColor.fromHexString("#FFEA6D"))
-                            .hoverEvent(HoverEvent.showText(Component.text("UUID законного владельца (скопировать)").color(TextColor.fromHexString("#FFEA6D"))))
-                            .clickEvent(ClickEvent.copyToClipboard(uuid)));
-                    builder.append(Component.newline());
+                    commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.list.item", ""+id, uuid));
                 }
-                commandSender.sendMessage(builder.build());
-
-                builder = Component.text();
-                builder.append(Component.text("--------------------------------------").color(TextColor.fromHexString("#FFFF99")));
-                builder.append(Component.newline());
-                builder.append(Component.text("   <<<< ").color(TextColor.fromHexString("#9AFF0F"))
-                        .clickEvent(ClickEvent.runCommand("/pixelart blacklist list "+(page - 1))));
-                builder.append(Component.text(page).color(TextColor.fromHexString("#FFFF99")))
-                        .append(Component.text("/").color(TextColor.fromHexString("#9AFF0F")))
-                        .append(Component.text(pages).color(TextColor.fromHexString("#FFFF99")));
-                builder.append(Component.text(" >>>> ").color(TextColor.fromHexString("#9AFF0F"))
-                        .clickEvent(ClickEvent.runCommand("/pixelart blacklist list "+(page + 1))));
-                commandSender.sendMessage(builder.build());
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.list.footer", ""+page, ""+pages));
+                commandSender.sendMessage(LangManager.getInstance().getLang("blacklist.list.page_controller", ""+(page - 1), ""+page, ""+(page + 1), ""+pages));
             }
         }
     }

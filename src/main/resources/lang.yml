@@ -24,14 +24,17 @@ scan:
   success: ""
 blacklist:
   add:
-    success: "<#9AFF0F>You've added <#FFFF99><arg1><#9AFF0F> to the blacklist."
+    success: "<#9AFF0F>You've added map <#FFFF99><arg1><#9AFF0F> to the blacklist with real owner id <#FFFF99><arg2><#9AFF0F>."
     fail: "<#FF995E>Failed to add <#FFFF99><arg1><#FF995E> to the blacklist."
   remove:
-    success: "<#9AFF0F>You've removed <#FFFF99><arg1><#9AFF0F> from the blacklist."
-    fail: "<#FF995E>Failed to remove <#FFFF99><arg1><#FF995E> from the blacklist."
+    success: "<#9AFF0F>You've removed map <#FFFF99><arg1><#9AFF0F> from the blacklist."
+    fail_not_on_list: "<#FF995E>The map <#FFFF99><arg1><#FF995E> is not on the blacklist."
   list:
-    header: "<#9AFF0F>Blacklist"
+    header: "<#FFFF99><bold>Blacklist</bold>\n<#FFFF99>----------------------------------------------------"
+    footer: "<#FFFF99>----------------------------------------------------"
     empty: "<#9AFF0F>The blacklist is empty."
+    item: "<#FF995E><hover:show_text:'<#FF995E>Remove'><click:run_command:'/pixelart blacklist remove <arg1>'> ❌ </click></hover> <hover:show_text:'<#9AFF0F>Map id'><arg1></hover> <#FFEA6D><click:copy_to_clipboard:'<arg2>'><hover:show_text:'<#FFEA6D>Legitimate owner UUID, click to copy'><arg2></hover></click>"
+    page_controller: "<#9AFF0F><hover:show_text:'<#9AFF0F>Previous page'><click:run_command:'/pixelart blacklist list <arg1>'>  ◀◀◀◀◀ </click></hover><#FFFF99><arg2><#9AFF0F>/<#FFFF99><arg4><#9AFF0F><hover:show_text:'<#9AFF0F>Next page'><click:run_command:'/pixelart blacklist list <arg3>'> ▶▶▶▶▶ </click></hover>"
 copy:
   banner:
     unprotected_reminder: "<#FFFF99>Remember! Copies of protected banners are not protected!"
