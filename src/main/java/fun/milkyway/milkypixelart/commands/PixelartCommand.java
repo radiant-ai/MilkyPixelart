@@ -80,19 +80,22 @@ public class PixelartCommand extends BaseCommand {
     }
 
     @CommandPermission("pixelart.findduplicated")
-    @Subcommand("findduplicated")
-    @CommandAlias("scan")
+    @Subcommand("scan")
     public void onFindDuplicates(CommandSender commandSender, Integer mapId) {
         PixelartManager.getInstance().getDuplicates(commandSender, mapId).thenAccept(list -> {
-            commandSender.sendMessage(ChatColor.GREEN+"Найдено "+list.size()+" дубликатов:");
+            if (list.isEmpty()) {
+                return;
+            }
+            commandSender.sendMessage(LangManager.getInstance().getLang("scan.success", ""+list.size()));
             for (String fileName : list) {
-               commandSender.sendMessage(ChatColor.GRAY+""+fileName);
-           }
+               commandSender.sendMessage(LangManager.getInstance().getLang("scan.item", fileName));
+            }
         });
     }
 
     @CommandPermission("pixelart.fix")
     @Subcommand("fix")
+    @CommandCompletion("map_id")
     public void onFix(Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         CopyrightManager.Author author = PixelartManager.getInstance().getAuthor(itemStack);
@@ -109,21 +112,19 @@ public class PixelartCommand extends BaseCommand {
 
     @CommandPermission("pixelart.preview")
     @Subcommand("preview")
-    @CommandCompletion("номер_карты")
+    @CommandCompletion("map_id")
     public void onPreview(Player player, Integer mapId) {
         PixelartManager.getInstance().renderArt(player, mapId);
     }
 
     @CommandPermission("pixelart.show")
     @Subcommand("show")
-    @CommandCompletion("номер_карты")
     public void onShow(Player player) {
         PixelartManager.getInstance().showMaps(player, false);
     }
 
     @CommandPermission("pixelart.showall")
     @Subcommand("showall")
-    @CommandCompletion("номер_карты")
     public void onShowAll(Player player) {
         PixelartManager.getInstance().showMaps(player, true);
     }

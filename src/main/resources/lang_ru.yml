@@ -1,0 +1,98 @@
+copyright:
+  title: "<#FFFF99>Защищено от копирования"
+  author: "<#FFFF99>© <#9AFF0F><arg1>"
+  legacy:
+    - "Copyrighted by"
+show:
+  message: "<#9AFF0F><arg1> <#FFFF99>показывает всем свои пиксельарты: <arg2>"
+  map_component: "<#9AFF0F>[<arg1>]"
+  map_default_name: "Пикслельарт"
+  click_to_preview: "<#9AFF0F>Нажмите сюда для предпросмотра пикслеьарта <#FFFF99><arg1>"
+  fail_no_map: "<#FF995E>Вы должны держать ваш пиксельарт в руке чтобы показать его другим."
+  fail_no_in_toolbar: "<#FF995E>Вы должны иметь пиксельарт в панели инструментов чтобы показать его другим."
+  fail_cooldown: "<#FF995E>Вы не можете показывать пиксельарты еще <arg1> секунд!"
+preview:
+  success: "<#9AFF0F>Включен предпросмотр пиксельарта."
+  fail: "<#FF995E>Не удалось включить предпросмотр."
+protect:
+  fail_should_hold: "<#FF995E>Вы должны держать баннер или пиксельарт в руке!"
+  fail_already_protected: "<#FF995E>Этот предмет уже защищен от копирования!"
+  fail_nothing_to_protect: "<#FF995E>Тут нечего защищать..."
+  fail_not_enough_money: "<#FF995E>У вас недостаточно денег. Всего вам нужно: <#FFFF99><arg1>$"
+  success: "<#9AFF0F>Вы защитили своё творение! Денег списано: <#FFFF99><arg1>$"
+scan:
+  success: "<#9AFF0F>Найдено <#FFFF99><arg1> <#9AFF0F>копий:"
+  item: "<#AEB6C4> - <#FFFF99><hover:show_text:'<#FFFF99>Файл карты, нажмите чтобы скопировать'><click:copy_to_clipboard:'<arg1>'><arg1></click></hover>"
+  fail: "<#FF995E>Копии не найдены."
+  fail_no_map: "<#FF995E>Файл указаной карты не найден."
+  files_found: "<#9AFF0F>Всего найдено <#FFFF99><arg1> <#9AFF0F>файлов карт. Начинаем сканирования..."
+  files_scanned: "<#AEB6C4>Просканировано <#FFFF99><arg1> <#AEB6C4>файлов карт..."
+blacklist:
+  add:
+    success: "<#9AFF0F>Вы доабвили карту <#FFFF99><arg1><#9AFF0F> в черный список с ID владельца <#FFFF99><arg2><#9AFF0F>."
+    fail: "<#FF995E>Не удалось добавить карту <#FFFF99><arg1><#FF995E> в черный список."
+  remove:
+    success: "<#9AFF0F>Вы убрали карту <#FFFF99><arg1><#9AFF0F> из черного списка."
+    fail_not_on_list: "<#FF995E>Карта <#FFFF99><arg1><#FF995E> не в черном списке."
+  list:
+    header: "<#FFFF99><bold>Черный список</bold>\n<#FFFF99>----------------------------------------------------"
+    footer: "<#FFFF99>----------------------------------------------------"
+    empty: "<#9AFF0F>Черный список пуст."
+    item: "<#FF995E><hover:show_text:'<#FF995E>Удалить'><click:run_command:'/pixelart blacklist remove <arg1>'> ❌ </click></hover> <hover:show_text:'<#9AFF0F>ID карты'><arg1></hover> <#FFEA6D><click:copy_to_clipboard:'<arg2>'><hover:show_text:'<#FFEA6D>ID владельца, нажмите кля копирования'><arg2></hover></click>"
+    page_controller: "<#9AFF0F><hover:show_text:'<#9AFF0F>Предыдущая страница'><click:run_command:'/pixelart blacklist list <arg1>'>  ◀◀◀◀◀ </click></hover><#FFFF99><arg2><#9AFF0F>/<#FFFF99><arg4><#9AFF0F><hover:show_text:'<#9AFF0F>Следующая страница'><click:run_command:'/pixelart blacklist list <arg3>'> ▶▶▶▶▶ </click></hover>"
+copy:
+  banner:
+    unprotected_reminder: "<#FFFF99>Запомните! Копии защищенных баннеров не являются защищенными."
+    fail_not_your_banner: "<#FF995E>Вы не можете копировать баннеры защещенные кем-то другим!"
+  pixelart:
+    fail_not_your_pixelart: "<#FF995E>Вы не можете копировать пиксельарты защищенные кем-то другим!"
+    fail_need_cartography_table: "<#FF995E>Вам нужен стол картографа для копирования пиксельартов!"
+    unprotected_reminder: "<#FFFF99>Запомните! Копии защищенных пиксельартов не являются защищенными."
+banner_paint:
+  apply:
+    fail_no_access: "<#FF995E>Вы не можете наносить узоры на баннер тут!"
+    fail_need_loom: "<#FF995E>Вам нужен ткацкий станок поблизовсти или в вашем инвертаре!"
+    fail_protected: "<#FF995E>Вы не можете добавлять узоры на баннеры которые защищены кем-то!"
+    fail_limit_reached: "<#FF995E>Вы не можете добавить больше узоров на этот баннер!"
+    fail_dye_missing: "<#FF995E>У вас больше нет нужного красителя в инвертаре!"
+    success: "<#9AFF0F>Вы нанесли узор на баннер."
+    menu:
+      title: "<#FFFF99><bold>Нанесение узора"
+      pattern: "<italic>Узор"
+      information:
+        title: "<bold>Информация"
+        lines:
+          - "<#FFFF99>Через это меню вы можете"
+          - "<#FFFF99>нанести до 16 узоров на баннер."
+          - ""
+          - "<#FFFF99>Не можете найти особые узоры?"
+          - "<#FFFF99>Вы должны иметь из в инвертаре,"
+          - "<#FFFF99>после этого они станут доступны в меню."
+          - ""
+          - "<#FFFF99>Вы также можете вытереть верхний"
+          - "<#FFFF99>узор применяя мембрану фантома."
+  erase:
+    fail_no_access: "<#FF995E>Вы не можете вытирать узоры на баннерах тут!"
+    fail_protected: "<#FF995E>Вы не можете вытирать узоры на баннерах, защищенных кем-то другим!"
+    fail_no_patterns: "<#FF995E>На этом баннере нет узоров!"
+    success: "<#9AFF0F>Вы вытерли узор с банера."
+region_protection:
+  pixelart:
+    fail_no_access: "<#FF995E>You can't create a map here!"
+reload:
+  reloading: "<#FFFF99>Reloading the plugin..."
+  success: "<#9AFF0F>Plugin reloaded successfully."
+help:
+  commands:
+    - ""
+    - "<#9AFF0F>/art protect <#FFFF99>- protect your banner or pixel art from duplication"
+    - "<#9AFF0F>/art show <#FFFF99>- show off your art to everyone in the chat"
+    - "<#9AFF0F>/art showall <#FFFF99>- show off all your arts in the toolbar"
+    - ""
+    - "<#9AFF0F>- <#FFFF99>Create banners with up to 16 patterns, just right click on a banner with a dye in hands"
+    - "<#9AFF0F>- <#FFFF99>Preview pixel arts right from the market GUI, just right click on the map in inventory view"
+    - "<#9AFF0F>- <#FFFF99>Prevent players from creating maps in protected regions (regions should reach the maximum height)"
+    - ""
+  prices:
+    pixelart: "<#9AFF0F>Protect pixel art <#FFFF99>- <#9AFF0F><arg1>$"
+    banner: "<#9AFF0F>Protect banner <#FFFF99>- <#9AFF0F><arg1>$"

@@ -14,12 +14,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -40,15 +42,11 @@ public final class MilkyPixelart extends JavaPlugin {
             getLogger().info("Created data folder!");
         }
 
-        try {
-            configuration = loadConfig("config.yml");
-            lang = loadConfig("lang.yml");
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING, e.getMessage(), e);
-        }
+        configuration = loadConfig("config.yml", "config.yml");
 
         paperCommandManager = new PaperCommandManager(this);
-        paperCommandManager.getLocales().setDefaultLocale(Locales.RUSSIAN);
+
+        loadLocales();
 
         CommandAddons.addResolvers(paperCommandManager);
         CommandAddons.loadAliases(paperCommandManager);
@@ -93,25 +91,47 @@ public final class MilkyPixelart extends JavaPlugin {
         }
     }
 
-    public FileConfiguration loadConfig(String fileName) throws IOException {
-        File configFile = new File(getDataFolder(), fileName);
-        InputStream defaultConfigStream = getResource(fileName);
-        var configuration = YamlConfiguration.loadConfiguration(configFile);
-        if (defaultConfigStream != null) {
-            configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defaultConfigStream, StandardCharsets.UTF_8)));
+    public @NotNull FileConfiguration loadConfig(@NotNull String fileName, @NotNull String fallbackFile) {
+        try {
+            File configFile = new File(getDataFolder(), fileName);
+            InputStream defaultConfigStream = getResource(fileName);
+            if (defaultConfigStream == null) {
+                getLogger().warning("Could not find " + fileName + " in jar! Falling back to " + fallbackFile);
+                defaultConfigStream = getResource(fallbackFile);
+            }
+            var configuration = YamlConfiguration.loadConfiguration(configFile);
+            if (defaultConfigStream != null) {
+                configuration.setDefaults(YamlConfiguration.loadConfiguration(new InputStreamReader(defaultConfigStream, StandardCharsets.UTF_8)));
+            }
+            configuration.options().copyDefaults(true);
+            configuration.save(configFile);
+            return configuration;
         }
-        configuration.options().copyDefaults(true);
-        configuration.save(configFile);
-        return configuration;
+        catch (IOException exception) {
+            getLogger().log(Level.WARNING, "Error occurred while loading config file:"+fileName, exception);
+        }
+
+        return new YamlConfiguration();
+    }
+
+    public void loadLocales() {
+        switch (configuration.getString("lang", "en").toLowerCase(Locale.ROOT)) {
+            case "ru" -> {
+                lang = loadConfig("lang_ru.yml", "lang.yml");
+                paperCommandManager.getLocales().setDefaultLocale(Locales.RUSSIAN);
+            }
+            default -> {
+                lang = loadConfig("lang.yml", "lang.yml");
+                paperCommandManager.getLocales().setDefaultLocale(Locales.ENGLISH);
+            }
+        }
     }
 
     public CompletableFuture<Void> reload() {
-        try {
-            configuration = loadConfig("config.yml");
-            lang = loadConfig("lang.yml");
-        } catch (IOException e) {
-            getLogger().log(Level.WARNING, "Error occurred while reloading the plugin!", e);
-        }
+        configuration = loadConfig("config.yml", "config.yml");
+
+        loadLocales();
+
         LangManager.reload();
         CopyrightManager.reload();
 

@@ -436,7 +436,7 @@ public class PixelartManager extends ArtManager {
                 File[] files = dataDirectory.listFiles();
 
                 if (files != null) {
-                    commandSender.sendMessage(ChatColor.GREEN+"Найдено "+files.length+" файлов карт, начинаем поиск...");
+                    commandSender.sendMessage(LangManager.getInstance().getLang("scan.files_found", files.length+""));
 
                     AtomicInteger count = new AtomicInteger(0);
                     List<String> resultList = Collections.synchronizedList(new ArrayList<>());
@@ -456,8 +456,8 @@ public class PixelartManager extends ArtManager {
                                 Player freshPlayer = plugin.getServer().getPlayer(player.getUniqueId());
                                 if ( freshPlayer != null &&
                                         freshPlayer.isOnline() &&
-                                        countUnboxed % 2500 == 0) {
-                                    commandSender.sendMessage(ChatColor.GRAY+"Просмотрено "+ChatColor.WHITE+count+ChatColor.GRAY+" файлов карт!");
+                                        countUnboxed % 1000 == 0) {
+                                    commandSender.sendMessage(LangManager.getInstance().getLang("scan.files_scanned", count+""));
                                 }
                             }
                         }, threadPoolExecutor);
@@ -468,7 +468,7 @@ public class PixelartManager extends ArtManager {
 
             }
             else {
-                commandSender.sendMessage(ChatColor.RED+"Не удалось найти указанную карту!");
+                commandSender.sendMessage(LangManager.getInstance().getLang("scan.fail_no_map"));
             }
         });
 
