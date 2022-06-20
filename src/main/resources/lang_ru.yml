@@ -5,9 +5,9 @@ copyright:
     - "Copyrighted by"
 show:
   message: "<#9AFF0F><arg1> <#FFFF99>показывает всем свои пиксельарты: <arg2>"
-  map_component: "<#9AFF0F>[<arg1>]"
+  map_component: "<#9AFF0F><click:run_command:'/pixelart preview <arg1>'>[<arg2>]"
   map_default_name: "Пикслельарт"
-  click_to_preview: "<#9AFF0F>Нажмите сюда для предпросмотра пикслеьарта <#FFFF99><arg1>"
+  click_to_preview: "<#9AFF0F>Нажмите сюда для предпросмотра пиксельарта <#FFFF99><arg1>"
   fail_no_map: "<#FF995E>Вы должны держать ваш пиксельарт в руке чтобы показать его другим."
   fail_no_in_toolbar: "<#FF995E>Вы должны иметь пиксельарт в панели инструментов чтобы показать его другим."
   fail_cooldown: "<#FF995E>Вы не можете показывать пиксельарты еще <arg1> секунд!"
@@ -78,21 +78,21 @@ banner_paint:
     success: "<#9AFF0F>Вы вытерли узор с банера."
 region_protection:
   pixelart:
-    fail_no_access: "<#FF995E>You can't create a map here!"
+    fail_no_access: "<#FF995E>Вы не можете создавать карты тут!"
 reload:
-  reloading: "<#FFFF99>Reloading the plugin..."
-  success: "<#9AFF0F>Plugin reloaded successfully."
+  reloading: "<#FFFF99>Перезагружаем плагин..."
+  success: "<#9AFF0F>Плагин успешно перезагружен."
 help:
   commands:
     - ""
-    - "<#9AFF0F>/art protect <#FFFF99>- protect your banner or pixel art from duplication"
-    - "<#9AFF0F>/art show <#FFFF99>- show off your art to everyone in the chat"
-    - "<#9AFF0F>/art showall <#FFFF99>- show off all your arts in the toolbar"
+    - "<#9AFF0F>/art protect <#FFFF99>- защитите ваш баннер или пиксельарт от копирования."
+    - "<#9AFF0F>/art show <#FFFF99>- покажите ваш арт в руке для всех."
+    - "<#9AFF0F>/art showall <#FFFF99>- покажите всем все ваши арты в панеле инструментов."
     - ""
-    - "<#9AFF0F>- <#FFFF99>Create banners with up to 16 patterns, just right click on a banner with a dye in hands"
-    - "<#9AFF0F>- <#FFFF99>Preview pixel arts right from the market GUI, just right click on the map in inventory view"
-    - "<#9AFF0F>- <#FFFF99>Prevent players from creating maps in protected regions (regions should reach the maximum height)"
+    - "<#9AFF0F>- <#FFFF99>Добавляйте на баннеры до 16 узоров - просто примените краситель на стоящий баннер"
+    - "<#9AFF0F>- <#FFFF99>Предпросматривайте пиксельарты прямо из меню магазина на ПКМ"
+    - "<#9AFF0F>- <#FFFF99>Не позволяйте другим игрокам создавать карты вашем привате"
     - ""
   prices:
-    pixelart: "<#9AFF0F>Protect pixel art <#FFFF99>- <#9AFF0F><arg1>$"
-    banner: "<#9AFF0F>Protect banner <#FFFF99>- <#9AFF0F><arg1>$"
+    pixelart: "<#9AFF0F>Защитить пиксельарт: <#FFFF99><arg1><#9AFF0F>$"
+    banner: "<#9AFF0F>Защитить баннер: <#FFFF99><arg1><#9AFF0F>$"

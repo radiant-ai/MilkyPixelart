@@ -5,7 +5,7 @@ copyright:
     - "Copyrighted by"
 show:
   message: "<#9AFF0F><arg1> <#FFFF99>shows their pixel arts to everyone: <arg2>"
-  map_component: "<#9AFF0F><click:run_command:'/pixelart blacklist remove <arg1>'>[<arg1>]"
+  map_component: "<#9AFF0F><click:run_command:'/pixelart preview <arg1>'>[<arg2>]"
   map_default_name: "Pixel Art"
   click_to_preview: "<#9AFF0F>Click here to preview <#FFFF99><arg1><#9AFF0F>'s pixel art"
   fail_no_map: "<#FF995E>You should hold a pixel art map in your hand to show it to others."

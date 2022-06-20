@@ -222,15 +222,16 @@ public class PixelartManager extends ArtManager {
             var displayName = itemMeta.displayName();
             if (displayName != null) {
                 builder.append(LangManager.getInstance().getLang("show.map_component",
+                        mapMeta.getMapView().getId()+"",
                         PlainTextComponentSerializer.plainText().serialize(displayName)));
             }
         }
         else {
             builder.append(LangManager.getInstance().getLang("show.map_component",
+                    mapMeta.getMapView().getId()+"",
                     LangManager.getInstance().getLangPlain("show.map_default_name")));
         }
         builder.hoverEvent(HoverEvent.showText(LangManager.getInstance().getLang("show.click_to_preview", name)));
-        builder.clickEvent(ClickEvent.runCommand("/"+ CommandAddons.getAnyAlias()+" preview "+mapMeta.getMapView().getId()));
         return builder.build();
     }
 

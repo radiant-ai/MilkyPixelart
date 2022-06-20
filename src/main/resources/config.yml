@@ -13,5 +13,5 @@ pixelarts:
     - "Auction"
     - "Market"
     - "Shop"
-  respectRegionProtection: false
+  respectRegionProtection: true
 lang: en
