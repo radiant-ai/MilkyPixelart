@@ -4,15 +4,14 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import fun.milkyway.milkypixelart.MilkyPixelart;
-import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
 import fun.milkyway.milkypixelart.listeners.MapCreateListener;
 import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
+import fun.milkyway.milkypixelart.utils.ActiveFrame;
 import fun.milkyway.milkypixelart.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -32,6 +31,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.*;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +59,8 @@ public class PixelartManager extends ArtManager {
     private final Map<Integer, ItemStack> previewMapKeys;
     private final Map<UUID, Long> lastShowMap;
 
+    private final Map<UUID, ActiveFrame> activeFrames;
+
     //SIGNLETON
     private PixelartManager() {
         super();
@@ -69,6 +71,7 @@ public class PixelartManager extends ArtManager {
         random = new Random();
         previewMapKeys = new HashMap<>();
         lastShowMap = new HashMap<>();
+        activeFrames = new HashMap<>();
 
         initializeFixMap(new File(plugin.getDataFolder(), "replacementData.txt").getPath());
         loadBlacklist();
@@ -280,7 +283,10 @@ public class PixelartManager extends ArtManager {
         Location l = Utils.calculatePlayerFace(player);
 
         int id = createItemFrame(player, l);
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killItemFrame(player, id), 100);
+        var task = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killFrame(player),
+                MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100));
+
+        saveFrame(player, id, task);
 
         if (id == 0) {
             return CompletableFuture.completedFuture(false);
@@ -377,6 +383,21 @@ public class PixelartManager extends ArtManager {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveFrame(@NotNull Player player, int frameId, BukkitTask bukkitTask) {
+        killFrame(player);
+        activeFrames.put(player.getUniqueId(), new ActiveFrame(frameId, bukkitTask));
+    }
+
+    private void killFrame(@NotNull Player player) {
+        var activeFrame = activeFrames.get(player.getUniqueId());
+        if (activeFrame == null) {
+            return;
+        }
+        killItemFrame(player, activeFrame.getFrameId());
+        activeFrame.getTask().cancel();
+        activeFrames.remove(player.getUniqueId());
     }
 
     private void killItemFrame(@NotNull Player p, int id) {

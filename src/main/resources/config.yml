@@ -6,6 +6,7 @@ commands:
 banners:
   copyrightPrice: 20
 pixelarts:
+  previewDuration: 100
   showArtCooldown: 300
   copyrightPrice: 100
   previewEverywhere: false
