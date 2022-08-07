@@ -314,10 +314,10 @@ public class PixelartManager extends ArtManager {
         pc.getIntegers().write(2, 0);
         pc.getIntegers().write(3, 0);
         //Pitch and yaw
-        pc.getIntegers().write(4, 0);
-        pc.getIntegers().write(5, (int) (l.getYaw() * 256.0F / 360.0F));
+        //pc.getIntegers().write(4, 0);
+        //pc.getIntegers().write(5, (int) (l.getYaw() * 256.0F / 360.0F));
         //Data
-        pc.getIntegers().write(6, direction);
+        pc.getIntegers().write(4, direction);
 
         try {
             protocolManager.sendServerPacket(player, pc);
@@ -360,10 +360,11 @@ public class PixelartManager extends ArtManager {
     }
 
     private void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack map) {
-        PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.ENTITY_METADATA);
+        PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
         pc.getIntegers().write(0, itemFrameId);
         WrappedDataWatcher watcher = new WrappedDataWatcher();
         watcher.setEntity(player);
+        watcher.setObject(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20);
         watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), map);
         pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 

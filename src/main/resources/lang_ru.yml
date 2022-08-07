@@ -6,7 +6,7 @@ copyright:
 show:
   message: "<#9AFF0F><arg1> <#FFFF99>показывает всем свои пиксельарты: <arg2>"
   map_component: "<#9AFF0F><click:run_command:'/pixelart preview <arg1>'>[<arg2>]"
-  map_default_name: "Пикслельарт"
+  map_default_name: "Пиксельарт"
   click_to_preview: "<#9AFF0F>Нажмите сюда для предпросмотра пиксельарта <#FFFF99><arg1>"
   fail_no_map: "<#FF995E>Вы должны держать ваш пиксельарт в руке чтобы показать его другим."
   fail_no_in_toolbar: "<#FF995E>Вы должны иметь пиксельарт в панели инструментов чтобы показать его другим."
