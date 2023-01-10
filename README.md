@@ -24,8 +24,8 @@ Add the desired art maps to blacklist so they instantly get deleted on your serv
 ![Demo](https://i.imgur.com/MGqk2mM.png)
 
 ## Dependencies
-- PaperMC 1.19.1
-- ProtocolLib
+- Latest Paper
+- Latest ProtocolLib
 - Vault + any Economy plugin
 ## Configuration
 ```

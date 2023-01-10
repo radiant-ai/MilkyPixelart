@@ -2,7 +2,9 @@ package fun.milkyway.milkypixelart.managers;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import com.google.common.collect.Lists;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
@@ -15,6 +17,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.querz.nbt.io.NBTUtil;
@@ -25,6 +28,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -319,12 +323,7 @@ public class PixelartManager extends ArtManager {
         //Data
         pc.getIntegers().write(4, direction);
 
-        try {
-            protocolManager.sendServerPacket(player, pc);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            return 0;
-        }
+        protocolManager.sendServerPacket(player, pc);
 
         return id;
     }
@@ -359,31 +358,25 @@ public class PixelartManager extends ArtManager {
         return result;
     }
 
-    private void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack map) {
+    private void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack item) {
         PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
         pc.getIntegers().write(0, itemFrameId);
-        WrappedDataWatcher watcher = new WrappedDataWatcher();
-        watcher.setEntity(player);
-        watcher.setObject(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20);
-        watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), map);
-        pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 
-        try {
-            protocolManager.sendServerPacket(player, pc);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+        var values = List.of(
+                new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20),
+                new WrappedDataValue(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), CraftItemStack.asNMSCopy(item))
+        );
+
+        pc.getDataValueCollectionModifier().write(0, values);
+        protocolManager.sendServerPacket(player, pc);
     }
 
     private void sendMapPacket(@NotNull Player player, int mapId,  byte @NotNull [] bytes) {
         WorldMap.b worldMap = new WorldMap.b(0 ,0, 128, 128, bytes);
         PacketPlayOutMap nmsPacket = new PacketPlayOutMap(mapId, (byte) 4, false, null, worldMap);
         PacketContainer pc2 = PacketContainer.fromPacket(nmsPacket);
-        try {
-            protocolManager.sendServerPacket(player, pc2);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+
+        protocolManager.sendServerPacket(player, pc2);
     }
 
     private void saveFrame(@NotNull Player player, int frameId, BukkitTask bukkitTask) {
@@ -404,11 +397,8 @@ public class PixelartManager extends ArtManager {
     private void killItemFrame(@NotNull Player p, int id) {
         PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
         pc.getIntLists().write(0, List.of(id));
-        try {
-            protocolManager.sendServerPacket(p, pc);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
+
+        protocolManager.sendServerPacket(p, pc);
     }
 
     public File getMapsDirectory() {
