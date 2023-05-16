@@ -4,7 +4,6 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.google.common.collect.Lists;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
 import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
@@ -17,7 +16,6 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutMap;
 import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.querz.nbt.io.NBTUtil;
@@ -28,7 +26,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R3.map.CraftMapRenderer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -42,7 +41,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -338,21 +336,13 @@ public class PixelartManager extends ArtManager {
                 return CompletableFuture.completedFuture(false);
             }
 
-            CompletableFuture.supplyAsync(() -> getMapBytes(mapView.getId()), executorService).thenAcceptAsync(bytes -> {
-                if (!mapView.getRenderers().isEmpty()) {
+            var bytes = getMapBytesLive(mapView.getId());
 
-                    sendMapPacket(player, id, mapItemStack);
+            sendMapPacket(player, id, mapItemStack);
 
-                    if (bytes != null) {
-                        sendMapPacket(player, mapView.getId(), bytes);
-                    }
-
-                    result.complete(true);
-                }
-
-                result.complete(false);
-
-            }, executorService);
+            if (bytes != null) {
+                sendMapPacket(player, mapView.getId(), bytes);
+            }
         }
 
         return result;
@@ -429,9 +419,34 @@ public class PixelartManager extends ArtManager {
         }
     }
 
-    private byte[] getMapBytes(int id) {
+    private byte[] getMapBytesOffline(int id) {
         File mapFile = new File(getMapsDirectory(), "map_"+id+".dat");
         return getMapBytesFromFile(mapFile);
+    }
+
+    private byte[] getMapBytesLive(int id) {
+        var map = Bukkit.getMap(id);
+        if (map == null) {
+            return null;
+        }
+        if (map.getRenderers().isEmpty()) {
+            return null;
+        }
+        var renderer = map.getRenderers().get(0);
+
+        if (!(renderer instanceof CraftMapRenderer)) {
+            return null;
+        }
+
+        try {
+            var canvas= CraftMapRenderer.class.getDeclaredField("worldMap");
+            canvas.setAccessible(true);
+            var worldMap = (WorldMap) canvas.get(renderer);
+            return worldMap.g;
+
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return null;
+        }
     }
 
     public CompletableFuture<List<String>> getDuplicates(@NotNull CommandSender commandSender, int mapId) {
@@ -441,7 +456,7 @@ public class PixelartManager extends ArtManager {
 
         threadPoolExecutor.submit(() -> {
 
-            byte[] originalBytes = getMapBytes(mapId);
+            byte[] originalBytes = getMapBytesOffline(mapId);
 
             if (originalBytes != null) {
 
