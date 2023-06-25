@@ -30,6 +30,10 @@ jobs:
           mvn install:install-file -Dfile="versions/${{ env.mc_version }}/purpur-${{ env.mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.mc_version }}" -Dpackaging=jar
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
+      - name: Debug
+        run: |
+          echo '$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)'
+          echo '$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version)'
       - name: Copy jar files to staging
         run: |
           echo 'artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)' >> $GITHUB_ENV
