@@ -37,3 +37,10 @@ jobs:
         with:
           name: Package
           path: staging
+      - name: Test stuff
+        run: echo ${{ github.ref }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: staging/*
