@@ -39,9 +39,8 @@ public class CopyrightManager {
     }
 
     //we have to use old namespace to support legacy copyrighted items
-    @SuppressWarnings("deprecation")
     protected final NamespacedKey copyrightKey = new NamespacedKey("survivaltweaks", "copyright");
-    @SuppressWarnings("deprecation")
+
     protected final NamespacedKey copyrightNameKey = new NamespacedKey("survivaltweaks", "copyrightname");
 
     private static CopyrightManager instance;
@@ -208,14 +207,14 @@ public class CopyrightManager {
     }
 
     public void hidePatterns(@NotNull ItemMeta itemMeta) {
-        if (!itemMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
-            itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        if (!itemMeta.hasItemFlag(ItemFlag.HIDE_ITEM_SPECIFICS)) {
+            itemMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
         }
     }
 
     private void showPatterns(@NotNull BannerMeta bannerMeta) {
-        if (bannerMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
-            bannerMeta.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        if (bannerMeta.hasItemFlag(ItemFlag.HIDE_ITEM_SPECIFICS)) {
+            bannerMeta.removeItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
         }
     }
 }

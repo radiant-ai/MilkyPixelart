@@ -20,6 +20,9 @@ protect:
   fail_nothing_to_protect: "<#FF995E>Тут нечего защищать..."
   fail_not_enough_money: "<#FF995E>У вас недостаточно денег. Всего вам нужно: <#FFFF99><arg1>$"
   success: "<#9AFF0F>Вы защитили своё творение! Денег списано: <#FFFF99><arg1>$"
+unprotect:
+  fail_not_protected: "<#FF995E>На этом предмете нет защиты от копирования!"
+  success: "<#9AFF0F>Вы успешно удалили защиту с предмета."
 scan:
   success: "<#9AFF0F>Найдено <#FFFF99><arg1> <#9AFF0F>копий:"
   item: "<#AEB6C4> - <#FFFF99><hover:show_text:'<#FFFF99>Файл карты, нажмите чтобы скопировать'><click:copy_to_clipboard:'<arg1>'><arg1></click></hover>"

@@ -46,6 +46,12 @@ public abstract class ArtManager {
 
     public abstract boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack);
 
+    public boolean unprotect(@NotNull ItemStack itemStack) {
+        var newItem = getUnprotectedCopy(itemStack);
+        itemStack.setItemMeta(newItem.getItemMeta());
+        return true;
+    }
+
     public abstract @Nullable CopyrightManager.Author getAuthor(ItemStack itemStack);
 
     public abstract @NotNull ItemStack getUnprotectedCopy(ItemStack itemStack);
@@ -64,5 +70,21 @@ public abstract class ArtManager {
 
     public static boolean isMap(@Nullable ItemStack itemStack) {
         return itemStack != null && itemStack.getType().equals(Material.FILLED_MAP);
+    }
+
+    public static @Nullable ArtManager getInstance(@NotNull ItemStack itemStack) {
+        if (isBanner(itemStack)) {
+
+            return BannerManager.getInstance();
+
+        }
+
+        if (isMap(itemStack)) {
+
+            return PixelartManager.getInstance();
+
+        }
+
+        return null;
     }
 }

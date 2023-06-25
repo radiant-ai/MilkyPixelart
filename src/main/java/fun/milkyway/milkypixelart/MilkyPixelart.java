@@ -4,17 +4,13 @@ import co.aikar.commands.Locales;
 import co.aikar.commands.PaperCommandManager;
 import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.commands.PixelartCommand;
-import fun.milkyway.milkypixelart.managers.BannerManager;
-import fun.milkyway.milkypixelart.managers.CopyrightManager;
-import fun.milkyway.milkypixelart.managers.LangManager;
-import fun.milkyway.milkypixelart.managers.PixelartManager;
+import fun.milkyway.milkypixelart.managers.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -149,7 +145,11 @@ public final class MilkyPixelart extends JavaPlugin {
             if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading banner manager!", e);
             return m;
         });
-        return CompletableFuture.allOf(reload1, reload2);
+        CompletableFuture<Object> reload3 = MigrationManager.reload().handle((m, e) -> {
+            if (e != null) getLogger().log(Level.WARNING, "Error occurred while reloading migration manager!", e);
+            return m;
+        });
+        return CompletableFuture.allOf(reload1, reload2, reload3);
     }
 
     public Economy getEconomy() {

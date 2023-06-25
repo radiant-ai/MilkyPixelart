@@ -6,7 +6,7 @@
 
     <groupId>fun.milkyway</groupId>
     <artifactId>MilkyPixelart</artifactId>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
     <packaging>jar</packaging>
 
     <name>MilkyPixelart</name>
@@ -64,16 +64,14 @@
                 </executions>
             </plugin>
 
-            <!--
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <outputDirectory>D:/milky-way-copy/plugins/update</outputDirectory>
+                    <outputDirectory>D:/minecraft_dev/milky-way-copy/plugins/update</outputDirectory>
                 </configuration>
-            </plugin>
-            -->
+            </plugin>-->
 
         </plugins>
         <resources>

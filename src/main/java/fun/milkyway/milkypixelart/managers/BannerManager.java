@@ -46,7 +46,7 @@ public class BannerManager extends ArtManager {
         bannerEditorMenus = new HashMap<>();
     }
 
-    public synchronized static @NotNull BannerManager getInstance() {
+    public static @NotNull BannerManager getInstance() {
         if (instance == null) {
             instance = new BannerManager();
         }
@@ -295,7 +295,7 @@ public class BannerManager extends ArtManager {
     }
 
     @Override
-    public void shutdown() throws Exception{
+    public void shutdown() {
         unregisterListeners();
         for (InventoryView inventoryView : bannerEditorMenus.keySet()) {
             if (MilkyPixelart.getInstance().isEnabled()) {

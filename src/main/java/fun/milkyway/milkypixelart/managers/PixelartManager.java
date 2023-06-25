@@ -39,7 +39,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -51,8 +50,6 @@ public class PixelartManager extends ArtManager {
 
     private final Random random;
     private final ThreadPoolExecutor executorService;
-
-    private Map<UUID, UUID> legacyToNewUUIDMap;
 
     private Map<Integer, UUID> blackList;
 
@@ -75,7 +72,6 @@ public class PixelartManager extends ArtManager {
         lastShowMap = new HashMap<>();
         activeFrames = new HashMap<>();
 
-        initializeFixMap(new File(plugin.getDataFolder(), "replacementData.txt").getPath());
         loadBlacklist();
 
         registerListener(new PixelartProtectionListener());
@@ -84,7 +80,7 @@ public class PixelartManager extends ArtManager {
         registerListener(new MapCreateListener());
     }
 
-    public synchronized static @NotNull PixelartManager getInstance() {
+    public static @NotNull PixelartManager getInstance() {
         if (instance == null) {
             instance = new PixelartManager();
         }
@@ -503,30 +499,6 @@ public class PixelartManager extends ArtManager {
         return finalResult;
     }
 
-    private void initializeFixMap(@NotNull String migrationFilePath) {
-        legacyToNewUUIDMap = new HashMap<>();
-        File entriesFile = new File(migrationFilePath);
-        if (entriesFile.exists()) {
-            try {
-                Scanner scanner = new Scanner(entriesFile);
-                while(scanner.hasNext()) {
-                    String line = scanner.nextLine();
-                    String[] tokens = line.split(":");
-                    UUID uuidFrom = UUID.fromString(tokens[0]);
-                    UUID uuidTo = UUID.fromString(tokens[1]);
-                    legacyToNewUUIDMap.put(uuidFrom, uuidTo);
-                }
-            }
-            catch (IllegalArgumentException | ArrayIndexOutOfBoundsException | FileNotFoundException exception) {
-                plugin.getLogger().log(Level.WARNING, exception.getMessage(), exception);
-            }
-        }
-    }
-
-    public @Nullable UUID fromLegacyUUID(@NotNull UUID uuid) {
-        return legacyToNewUUIDMap.get(uuid);
-    }
-
     private void saveBlacklist() {
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
         fileConfiguration.set("blacklist", null);
@@ -627,7 +599,7 @@ public class PixelartManager extends ArtManager {
             }
 
             //owner used to be legitimate in past
-            UUID realOwnerFromLegacy = fromLegacyUUID(author.getUuid());
+            UUID realOwnerFromLegacy = MigrationManager.getInstance().fromLegacyUUID(author.getUuid());
             return realOwnerFromLegacy != null && realOwnerFromLegacy.equals(realOwner);
         }
 

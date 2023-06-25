@@ -20,6 +20,9 @@ protect:
   fail_nothing_to_protect: "<#FF995E>Nothing to protect here..."
   fail_not_enough_money: "<#FF995E>You have not enough money. You need: <#FFFF99><arg1>$"
   success: "<#9AFF0F>You've protected your masterpiece! Money spent: <#FFFF99><arg1>$"
+unprotect:
+  fail_not_protected: "<#FF995E>This item is not protected!"
+  success: "<#9AFF0F>You've removed protection from the item."
 scan:
   success: "<#9AFF0F>Found <#FFFF99><arg1> <#9AFF0F>duplicates:"
   item: "<#AEB6C4> - <#FFFF99><hover:show_text:'<#FFFF99>Map file name, click to copy'><click:copy_to_clipboard:'<arg1>'><arg1></click></hover>"

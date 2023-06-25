@@ -7,7 +7,6 @@ import fun.milkyway.milkypixelart.managers.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -45,22 +44,16 @@ public class PixelartCommand extends BaseCommand {
     @Subcommand("protect")
     public void onProtect(Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
-        ArtManager protectionManager;
+        ArtManager protectionManager = ArtManager.getInstance(item);
 
-        if (ArtManager.isMap(item)) {
-            protectionManager = PixelartManager.getInstance();
-        }
-        else if (ArtManager.isBanner(item)) {
-            protectionManager = BannerManager.getInstance();
-        }
-        else {
+        if (protectionManager == null) {
             player.sendMessage(LangManager.getInstance().getLang("protect.fail_should_hold"));
             return;
         }
 
         CopyrightManager.Author author = protectionManager.getAuthor(item);
         if (author == null) {
-            int price = item.getAmount()*protectionManager.getProtectionCost();
+            int price = item.getAmount() * protectionManager.getProtectionCost();
             if (plugin.getEconomy().getBalance(player)>=price) {
                 if (protectionManager.protect(player, item)) {
                     plugin.getEconomy().withdrawPlayer(player, price);
@@ -95,19 +88,43 @@ public class PixelartCommand extends BaseCommand {
 
     @CommandPermission("pixelart.fix")
     @Subcommand("fix")
-    @CommandCompletion("map_id")
     public void onFix(Player player) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
-        CopyrightManager.Author author = PixelartManager.getInstance().getAuthor(itemStack);
-        if (author != null) {
-            UUID toUUID = PixelartManager.getInstance().fromLegacyUUID(author.getUuid());
-            if (toUUID != null) {
-                PixelartManager.getInstance().protect(toUUID, null, itemStack);
-                player.sendMessage(Component.text("Вы успешно исправили защищенный предмет!").color(TextColor.fromHexString("#9AFF0F")));
-                return;
-            }
+        ArtManager protectionManager = ArtManager.getInstance(itemStack);
+        if (protectionManager == null) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_should_hold"));
+            return;
         }
-        player.sendMessage(Component.text("Не удалось исправить защищенный предмет!").color(TextColor.fromHexString("#FF995E")));
+        CopyrightManager.Author author = protectionManager.getAuthor(itemStack);
+        if (author == null) {
+            player.sendMessage(LangManager.getInstance().getLang("unprotect.fail_not_protected"));
+            return;
+        }
+        UUID toUUID = MigrationManager.getInstance().fromLegacyUUID(author.getUuid());
+        if (toUUID == null) {
+            player.sendMessage(Component.text("Не найдены соответствия для переноса защиты!").color(TextColor.fromHexString("#FF995E")));
+            return;
+        }
+        protectionManager.protect(toUUID, null, itemStack);
+        player.sendMessage(Component.text("Вы успешно исправили защищенный предмет!").color(TextColor.fromHexString("#9AFF0F")));
+    }
+
+    @CommandPermission("pixelart.unprotect")
+    @Subcommand("unprotect")
+    public void onUnprotect(Player player) {
+        ItemStack itemStack = player.getInventory().getItemInMainHand();
+        ArtManager protectionManager = ArtManager.getInstance(itemStack);
+        if (protectionManager == null) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_should_hold"));
+            return;
+        }
+        CopyrightManager.Author author = protectionManager.getAuthor(itemStack);
+        if (author == null) {
+            player.sendMessage(LangManager.getInstance().getLang("unprotect.fail_not_protected"));
+            return;
+        }
+        protectionManager.unprotect(itemStack);
+        player.sendMessage(LangManager.getInstance().getLang("unprotect.success"));
     }
 
     @CommandPermission("pixelart.preview")
