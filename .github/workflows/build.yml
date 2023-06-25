@@ -32,8 +32,8 @@ jobs:
         run: mvn --batch-mode --update-snapshots package
       - name: Copy jar files to staging
         run: |
-          echo "artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)" >> $GITHUB_ENV
-          echo "artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version)" >> $GITHUB_ENV
+          echo 'artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)' >> $GITHUB_ENV
+          echo 'artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version)' >> $GITHUB_ENV
           mkdir staging && cp target/${{ env.artifact_id }}-${{ env.artifact_version }}.jar staging
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -42,8 +42,8 @@ jobs:
           path: staging
       - name: Debug
         run: |
-          echo "artifact_id=${{ env.artifact_id }}"
-          echo "artifact_version=${{ env.artifact_version }}"
+          echo artifact_id=${{ env.artifact_id }}
+          echo artifact_version=${{ env.artifact_version }}
           echo ${{ endsWith(github.ref, env.artifact_version) }}
       - name: Release
         uses: softprops/action-gh-release@v1
