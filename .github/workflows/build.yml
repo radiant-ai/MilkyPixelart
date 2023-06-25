@@ -31,10 +31,12 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
       - name: Debug
+        shell: bash
         run: |
           echo '$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)'
           echo '$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version)'
       - name: Copy jar files to staging
+        shell: bash
         run: |
           echo 'artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId)' >> $GITHUB_ENV
           echo 'artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version)' >> $GITHUB_ENV
