@@ -13,6 +13,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <minecraftVersion>1.20.1</minecraftVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -64,16 +65,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <outputDirectory>D:/minecraft_dev/milky-way-copy/plugins/update</outputDirectory>
-                </configuration>
-            </plugin>
-
         </plugins>
         <resources>
             <resource>

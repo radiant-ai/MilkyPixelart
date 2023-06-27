@@ -1,12 +1,14 @@
 name: Java CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'master'
+      - 'feature/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      mc_version: '1.20.1'
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -15,26 +17,27 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: maven
-      - name: Cache server jar
-        id: cache-server-jar
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.mc_version }}.jar
-          key: ${{ env.mc_version }}-server-jar
-      - name: Download Minecraft server
-        if: steps.cache-server-jar.outputs.cache-hit != 'true'
-        run: wget https://api.purpurmc.org/v2/purpur/${{ env.mc_version }}/latest/download -O ${{ env.mc_version }}.jar
-      - name: Install jar to server
-        run: |
-          java -jar ${{ env.mc_version }}.jar nogui
-          mvn install:install-file -Dfile="versions/${{ env.mc_version }}/purpur-${{ env.mc_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.mc_version }}" -Dpackaging=jar
-      - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots package
-      - name: Read artifact name and version
+      - name: Read artifact name, version, mc version
         shell: bash
         run: |
           echo "artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout=true)" >> $GITHUB_ENV
+          echo "minecraft_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.properties.minecraftVersion -q -DforceStdout=true)" >> $GITHUB_ENV
+      - name: Cache server jar
+        id: cache-server-jar
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.minecraft_version }}.jar
+          key: ${{ env.minecraft_version }}-server-jar
+      - name: Download Minecraft server
+        if: steps.cache-server-jar.outputs.cache-hit != 'true'
+        run: wget https://api.purpurmc.org/v2/purpur/${{ env.minecraft_version }}/latest/download -O ${{ env.minecraft_version }}.jar
+      - name: Install jar to server
+        run: |
+          java -jar ${{ env.minecraft_version }}.jar nogui
+          mvn install:install-file -Dfile="versions/${{ env.minecraft_version }}/purpur-${{ env.minecraft_version }}.jar" -DgroupId=minecraft -DartifactId=minecraft -Dversion="${{ env.minecraft_version }}" -Dpackaging=jar
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots package
       - name: Copy jar files to staging
         shell: bash
         run: |
@@ -49,4 +52,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, env.artifact_version)
         with:
           files: staging/*
-          body: 'Supported Minecraft version: ${{ env.mc_version }}'
+          body: 'Supported Minecraft version: ${{ env.minecraft_version }}'
