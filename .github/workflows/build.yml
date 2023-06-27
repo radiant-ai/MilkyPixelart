@@ -22,7 +22,7 @@ jobs:
         run: |
           echo "artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout=true)" >> $GITHUB_ENV
-          echo "minecraft_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.properties.minecraftVersion -q -DforceStdout=true)" >> $GITHUB_ENV
+          echo "minecraft_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=minecraftVersion -q -DforceStdout=true)" >> $GITHUB_ENV
       - name: Cache server jar
         id: cache-server-jar
         uses: actions/cache@v3
