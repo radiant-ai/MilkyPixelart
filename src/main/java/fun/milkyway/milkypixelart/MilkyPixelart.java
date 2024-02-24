@@ -6,6 +6,7 @@ import fun.milkyway.milkypixelart.commands.CommandAddons;
 import fun.milkyway.milkypixelart.commands.PixelartCommand;
 import fun.milkyway.milkypixelart.managers.*;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -24,6 +25,7 @@ import java.util.logging.Level;
 public final class MilkyPixelart extends JavaPlugin {
     private static MilkyPixelart instance;
     private Economy economy;
+    private Metrics metrics;
     private FileConfiguration configuration;
     private FileConfiguration lang;
 
@@ -56,6 +58,8 @@ public final class MilkyPixelart extends JavaPlugin {
         //Inject managers
         PixelartManager.getInstance();
         BannerManager.getInstance();
+
+        reloadBstats();
     }
 
     private boolean setupEconomy() {
@@ -130,6 +134,7 @@ public final class MilkyPixelart extends JavaPlugin {
 
         LangManager.reload();
         CopyrightManager.reload();
+        reloadBstats();
 
         CommandAddons.loadAliases(paperCommandManager);
 
@@ -166,5 +171,22 @@ public final class MilkyPixelart extends JavaPlugin {
 
     public FileConfiguration getLang() {
         return lang;
+    }
+
+    private void reloadBstats() {
+        if (!configuration.getBoolean("bStats", true) && metrics == null) {
+            return;
+        }
+        if (!configuration.getBoolean("bStats", true) && metrics != null) {
+            getLogger().info("Disabling bStats");
+            metrics.shutdown();
+            metrics = null;
+            return;
+        }
+        if (metrics != null) {
+            return;
+        }
+        getLogger().info("Enabling bStats");
+        metrics = new Metrics(this, 21107);
     }
 }

@@ -16,3 +16,4 @@ pixelarts:
     - "Shop"
   respectRegionProtection: true
 lang: en
+bStats: true

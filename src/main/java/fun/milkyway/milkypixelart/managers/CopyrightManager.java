@@ -207,14 +207,14 @@ public class CopyrightManager {
     }
 
     public void hidePatterns(@NotNull ItemMeta itemMeta) {
-        if (!itemMeta.hasItemFlag(ItemFlag.HIDE_ITEM_SPECIFICS)) {
-            itemMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+        if (!itemMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
+            itemMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         }
     }
 
     private void showPatterns(@NotNull BannerMeta bannerMeta) {
-        if (bannerMeta.hasItemFlag(ItemFlag.HIDE_ITEM_SPECIFICS)) {
-            bannerMeta.removeItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+        if (bannerMeta.hasItemFlag(ItemFlag.HIDE_POTION_EFFECTS)) {
+            bannerMeta.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         }
     }
 }
