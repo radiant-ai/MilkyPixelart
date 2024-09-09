@@ -5,12 +5,10 @@ import com.comphenix.protocol.events.*;
 import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import fun.milkyway.milkypixelart.MilkyPixelart;
-import fun.milkyway.milkypixelart.listeners.AuctionPreviewListener;
-import fun.milkyway.milkypixelart.listeners.IllegitimateArtListener;
-import fun.milkyway.milkypixelart.listeners.MapCreateListener;
-import fun.milkyway.milkypixelart.listeners.PixelartProtectionListener;
+import fun.milkyway.milkypixelart.listeners.*;
 import fun.milkyway.milkypixelart.utils.ActiveFrame;
 import fun.milkyway.milkypixelart.utils.Utils;
+import fun.milkyway.milkypixelart.utils.Versions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -296,7 +294,7 @@ public class PixelartManager extends ArtManager {
         int direction = Utils.getDirection(l);
         int id = Integer.MAX_VALUE - random.nextInt() % 100000;
 
-        PacketContainer pc = protocolManager .createPacket(PacketType.Play.Server.SPAWN_ENTITY);
+        PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
 
         //Entity
         pc.getEntityTypeModifier().write(0, EntityType.GLOW_ITEM_FRAME);
@@ -311,11 +309,11 @@ public class PixelartManager extends ArtManager {
         pc.getIntegers().write(2, 0);
         pc.getIntegers().write(3, 0);
 
-        switch (getVersionLevel()) {
+        switch (Versions.getVersionLevel()) {
             case v1_18 -> {
                 pc.getIntegers().write(6, direction);
             }
-            case v1_20 -> {
+            case v1_20,v1_21 -> {
                 pc.getIntegers().write(4, direction);
             }
         }
@@ -352,15 +350,15 @@ public class PixelartManager extends ArtManager {
             PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
             pc.getIntegers().write(0, itemFrameId);
 
-            switch (getVersionLevel()) {
+            switch (Versions.getVersionLevel()) {
                 case v1_18 -> {
                     WrappedDataWatcher watcher = new WrappedDataWatcher();
                     watcher.setEntity(player);
                     watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), item);
                     pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
                 }
-                case v1_20 -> {
-                    Class<?> craftItemStackClass = Class.forName("org.bukkit.craftbukkit."+getNMSVersion()+".inventory.CraftItemStack");
+                case v1_20, v1_21 -> {
+                    Class<?> craftItemStackClass = Class.forName("org.bukkit.craftbukkit."+Versions.getNMSVersion()+".inventory.CraftItemStack");
                     Method asNMSCopyMethod = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
                     Object nmsItemStack = asNMSCopyMethod.invoke(null, item);
                     var values = List.of(
@@ -383,10 +381,21 @@ public class PixelartManager extends ArtManager {
             Class<?> packetPlayOutMapClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutMap");
 
             Constructor<?> worldMapBConstructor = worldMapBClass.getDeclaredConstructor(int.class, int.class, int.class, int.class, byte[].class);
-            Constructor<?> packetPlayOutMapConstructor = packetPlayOutMapClass.getDeclaredConstructor(int.class, byte.class, boolean.class, Collection.class, worldMapBClass);
+
 
             Object worldMapBInstance = worldMapBConstructor.newInstance(0, 0, 128, 128, bytes);
-            Object packetPlayOutMapInstance = packetPlayOutMapConstructor.newInstance(mapId, (byte) 4, false, null, worldMapBInstance);
+            Object packetPlayOutMapInstance;
+            if (Versions.getVersionLevel() == Versions.VersionLevel.v1_21) {
+                Class<?> mapIdClass = Class.forName("net.minecraft.world.level.saveddata.maps.MapId");
+                Constructor<?> mapIdConstructor = mapIdClass.getDeclaredConstructor(int.class);
+                Object mapIdInstance = mapIdConstructor.newInstance(mapId);
+                Constructor<?> packetPlayOutMapConstructor = packetPlayOutMapClass.getDeclaredConstructor(mapIdClass, byte.class, boolean.class, Collection.class, worldMapBClass);
+                packetPlayOutMapInstance = packetPlayOutMapConstructor.newInstance(mapIdInstance, (byte) 4, false, null, worldMapBInstance);
+            }
+            else {
+                Constructor<?> packetPlayOutMapConstructor = packetPlayOutMapClass.getDeclaredConstructor(int.class, byte.class, boolean.class, Collection.class, worldMapBClass);
+                packetPlayOutMapInstance = packetPlayOutMapConstructor.newInstance(mapId, (byte) 4, false, null, worldMapBInstance);
+            }
             PacketContainer pc = PacketContainer.fromPacket(packetPlayOutMapInstance);
 
             protocolManager.sendServerPacket(player, pc);
@@ -461,7 +470,7 @@ public class PixelartManager extends ArtManager {
         var renderer = map.getRenderers().get(0);
 
         try {
-            Class<?> craftMapRendererClass = Class.forName("org.bukkit.craftbukkit."+getNMSVersion()+".map.CraftMapRenderer");
+            Class<?> craftMapRendererClass = Class.forName("org.bukkit.craftbukkit."+Versions.getNMSVersion()+".map.CraftMapRenderer");
             Class<?> worldMapClass = Class.forName("net.minecraft.world.level.saveddata.maps.WorldMap");
 
             if (!craftMapRendererClass.isInstance(renderer)) {
@@ -662,27 +671,5 @@ public class PixelartManager extends ArtManager {
         if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
             plugin.getLogger().warning("Force terminated executor service after timeout!");
         }
-    }
-
-    private static String getNMSVersion() {
-        return switch (MilkyPixelart.getInstance().getServer().getMinecraftVersion()) {
-            case "1.20.4" -> "v1_20_R3";
-            case "1.19.4" -> "v1_19_R3";
-            case "1.18.2" -> "v1_18_R2";
-            default -> throw new IllegalStateException("Unsupported minecraft version: " + MilkyPixelart.getInstance().getServer().getMinecraftVersion());
-        };
-    }
-
-    private static VersionLevel getVersionLevel() {
-        return switch (MilkyPixelart.getInstance().getServer().getMinecraftVersion()) {
-            case "1.20.4", "1.19.4" -> VersionLevel.v1_20;
-            case "1.18.2" -> VersionLevel.v1_18;
-            default -> throw new IllegalStateException("Unsupported minecraft version: " + MilkyPixelart.getInstance().getServer().getMinecraftVersion());
-        };
-    }
-
-    private enum VersionLevel {
-        v1_18,
-        v1_20
     }
 }

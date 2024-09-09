@@ -8,12 +8,14 @@ import fun.milkyway.milkypixelart.utils.MessageOnceManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Banner;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.CrafterCraftEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
@@ -76,6 +78,14 @@ public class BannerProtectionListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onCrafterCraft(CrafterCraftEvent event) {
+        if (!event.getRecipe().getKey().equals(NamespacedKey.minecraft("banner_duplicate"))) {
+            return;
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler

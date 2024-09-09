@@ -8,9 +8,11 @@ import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import fun.milkyway.milkypixelart.utils.MessageOnceManager;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.CrafterCraftEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
 
@@ -42,6 +44,14 @@ public class PixelartProtectionListener implements Listener {
                 },1);
             }
         }
+    }
+
+    @EventHandler
+    public void onCrafterCraft(CrafterCraftEvent event) {
+        if (!event.getRecipe().getKey().equals(NamespacedKey.minecraft("map_cloning"))) {
+            return;
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler
