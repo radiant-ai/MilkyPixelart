@@ -76,8 +76,7 @@ public class CopyrightManager {
 
         if (itemMeta instanceof MapMeta mapMeta) {
             freezeMap(mapMeta);
-        }
-        else if (itemMeta instanceof BannerMeta bannerMeta) {
+        } else if (itemMeta instanceof BannerMeta bannerMeta) {
             hidePatterns(bannerMeta);
         }
 

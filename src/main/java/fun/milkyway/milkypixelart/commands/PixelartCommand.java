@@ -10,6 +10,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class PixelartCommand extends BaseCommand {
 
     @CommandPermission("pixelart.protect")
     @Subcommand("protect")
-    public void onProtect(Player player) {
+    public void onProtect(@NotNull Player player) {
         ItemStack item = player.getInventory().getItemInMainHand();
         ArtManager protectionManager = ArtManager.getInstance(item);
 
@@ -58,16 +59,13 @@ public class PixelartCommand extends BaseCommand {
                 if (protectionManager.protect(player, item)) {
                     plugin.getEconomy().withdrawPlayer(player, price);
                     player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
-                }
-                else {
+                } else {
                     player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
                 }
-            }
-            else {
+            } else {
                 player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
             }
-        }
-        else {
+        } else {
             player.sendMessage(LangManager.getInstance().getLang("protect.fail_already_protected"));
         }
     }
@@ -123,8 +121,12 @@ public class PixelartCommand extends BaseCommand {
             player.sendMessage(LangManager.getInstance().getLang("unprotect.fail_not_protected"));
             return;
         }
-        protectionManager.unProtect(itemStack);
-        player.sendMessage(LangManager.getInstance().getLang("unprotect.success"));
+        if(author.getUuid().equals(player.getUniqueId())) {
+            player.sendMessage(LangManager.getInstance().getLang("unprotect.success"));
+            protectionManager.unProtect(itemStack);
+        } else {
+            player.sendMessage(LangManager.getInstance().getLang("unprotect.fail_unprotected"));
+        }
     }
 
     @CommandPermission("pixelart.preview")
