@@ -15,9 +15,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.CrafterCraftEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PixelartProtectionListener implements Listener {
 
@@ -36,12 +38,12 @@ public class PixelartProtectionListener implements Listener {
             if (filledMaps.stream().anyMatch(itemStack -> artManager.getAuthor(itemStack) != null)) {
                 player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_need_cartography_table"));
                 inventory.setResult(null);
-                MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                MilkyPixelart.getInstance().getServer().getAsyncScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
                     Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                     if (newPlayer != null) {
                         newPlayer.closeInventory();
                     }
-                },1);
+                },1, TimeUnit.SECONDS);
             }
         }
     }
@@ -58,7 +60,7 @@ public class PixelartProtectionListener implements Listener {
     public void onPixelartCopyCartography(PrepareResultEvent event) {
         PixelartManager artManager = PixelartManager.getInstance();
         if (event.getViewers().size() == 1 &&
-                event.getViewers().get(0) instanceof Player player &&
+                event.getViewers().getFirst() instanceof Player player &&
                 event.getInventory() instanceof CartographyInventory cartographyInventory) {
             ItemStack upperSlot = cartographyInventory.getItem(0);
             ItemStack lowerSlot = cartographyInventory.getItem(1);
@@ -75,18 +77,18 @@ public class PixelartProtectionListener implements Listener {
                 else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);
                     player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_not_your_pixelart"));
-                    MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                    MilkyPixelart.getInstance().getServer().getAsyncScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
                         Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                         if (newPlayer != null) {
                             newPlayer.closeInventory();
                         }
-                    },1);
+                    },1, TimeUnit.SECONDS);
                 }
             }
         }
     }
 
-    private List<ItemStack> getFilledMapsFromCraft(ItemStack[] itemStacks) {
+    private @NotNull List<ItemStack> getFilledMapsFromCraft(ItemStack @NotNull [] itemStacks) {
         List<ItemStack> maps = new ArrayList<>();
         for (ItemStack itemStack : itemStacks) {
             if (itemStack != null && itemStack.getType().equals(Material.FILLED_MAP)) {

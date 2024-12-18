@@ -123,7 +123,7 @@ public class PixelartCommand extends BaseCommand {
             player.sendMessage(LangManager.getInstance().getLang("unprotect.fail_not_protected"));
             return;
         }
-        protectionManager.unprotect(itemStack);
+        protectionManager.unProtect(itemStack);
         player.sendMessage(LangManager.getInstance().getLang("unprotect.success"));
     }
 

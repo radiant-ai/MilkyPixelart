@@ -36,8 +36,7 @@ public class BannerPaintListener implements Listener {
     public void onBannerPaint(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) ||
-                !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) || !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             return;
         }
 
@@ -79,8 +78,7 @@ public class BannerPaintListener implements Listener {
     public void onBannerErase(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) ||
-                !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) || !event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             return;
         }
 

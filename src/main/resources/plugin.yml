@@ -2,6 +2,7 @@ name: MilkyPixelart
 version: '${project.version}'
 main: fun.milkyway.milkypixelart.MilkyPixelart
 api-version: 1.18
+folia-supported: true
 depend:
   - ProtocolLib
   - Vault

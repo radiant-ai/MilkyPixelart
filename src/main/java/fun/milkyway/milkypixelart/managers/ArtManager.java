@@ -46,7 +46,7 @@ public abstract class ArtManager {
 
     public abstract boolean protect(@NotNull UUID uuid, @Nullable String name, @NotNull ItemStack itemStack);
 
-    public boolean unprotect(@NotNull ItemStack itemStack) {
+    public boolean unProtect(@NotNull ItemStack itemStack) {
         var newItem = getUnprotectedCopy(itemStack);
         itemStack.setItemMeta(newItem.getItemMeta());
         return true;

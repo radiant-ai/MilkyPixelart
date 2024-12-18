@@ -169,7 +169,7 @@ public class CopyrightManager {
                     iterator.remove();
                 }
             }
-            if (lore.size() == 0) {
+            if (lore.isEmpty()) {
                 lore = null;
             }
         }

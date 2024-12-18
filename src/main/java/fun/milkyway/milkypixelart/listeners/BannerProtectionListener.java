@@ -39,12 +39,12 @@ public class BannerProtectionListener implements Listener {
             CraftingInventory inventory = event.getInventory();
             BannerCraftDetails bannerCraftDetails = bannerDuplicate(inventory.getMatrix());
             if (bannerCraftDetails.getPatternedBanners().size() == 1) {
-                ItemStack copiedBanner = bannerCraftDetails.getPatternedBanners().get(0).clone();
+                ItemStack copiedBanner = bannerCraftDetails.getPatternedBanners().getFirst().clone();
                 CopyrightManager.Author author = artManager.getAuthor(copiedBanner);
                 //BANNER DUPLICATE RECIPE
-                if (bannerCraftDetails.getClearBanners().size() == 1 && bannerCraftDetails.getOtherItems().size() == 0
-                        && bannerCraftDetails.getPatternedBanners().get(0).getAmount() == 1) {
-                    ItemStack clearbanner = bannerCraftDetails.getClearBanners().get(0).clone();
+                if (bannerCraftDetails.getClearBanners().size() == 1 && bannerCraftDetails.getOtherItems().isEmpty()
+                        && bannerCraftDetails.getPatternedBanners().getFirst().getAmount() == 1) {
+                    ItemStack clearbanner = bannerCraftDetails.getClearBanners().getFirst().clone();
                     if (copiedBanner.getType().equals(clearbanner.getType())) {
                         if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                             inventory.setResult(null);
@@ -62,9 +62,9 @@ public class BannerProtectionListener implements Listener {
                     }
                 }
                 // SHIELD BANNER ATTACH RECIPE
-                else if (bannerCraftDetails.getClearBanners().size() == 0 && bannerCraftDetails.getOtherItems().size() == 1 &&
-                        bannerCraftDetails.getOtherItems().get(0).getType().equals(Material.SHIELD)) {
-                    ItemStack shield = bannerCraftDetails.getOtherItems().get(0).clone();
+                else if (bannerCraftDetails.getClearBanners().isEmpty() && bannerCraftDetails.getOtherItems().size() == 1 &&
+                        bannerCraftDetails.getOtherItems().getFirst().getType().equals(Material.SHIELD)) {
+                    ItemStack shield = bannerCraftDetails.getOtherItems().getFirst().clone();
                     if (!artManager.hasShieldPatterns(shield)) {
                         ItemStack resultShield = artManager.applyBannerToShield(shield, copiedBanner);
                         if (author != null) {
@@ -101,11 +101,11 @@ public class BannerProtectionListener implements Listener {
                     case PICKUP_ALL, MOVE_TO_OTHER_INVENTORY -> {
                         BannerCraftDetails craftDetails = bannerDuplicate(craftingInventory.getMatrix());
                         if (craftDetails.getClearBanners().size() == 1 && craftDetails.getPatternedBanners().size() == 1 &&
-                        craftDetails.getOtherItems().size() == 0) {
-                            banner.setAmount(craftDetails.getClearBanners().get(0).getAmount());
+                                craftDetails.getOtherItems().isEmpty()) {
+                            banner.setAmount(craftDetails.getClearBanners().getFirst().getAmount());
                             event.getView().setCursor(banner);
                             ItemStack[] newMatrix = new ItemStack[craftingInventory.getMatrix().length];
-                            ItemStack patteredBanner = craftDetails.getPatternedBanners().get(0).clone();
+                            ItemStack patteredBanner = craftDetails.getPatternedBanners().getFirst().clone();
                             patteredBanner.setAmount(1);
                             newMatrix[0] = patteredBanner;
                             craftingInventory.setMatrix(newMatrix);
@@ -127,7 +127,7 @@ public class BannerProtectionListener implements Listener {
             CopyrightManager.Author author = bannerManager.getAuthor(bannerState);
             if (author != null) {
                 if (event.getItems().size() == 1) {
-                    ItemStack banner = event.getItems().get(0).getItemStack();
+                    ItemStack banner = event.getItems().getFirst().getItemStack();
                     bannerManager.protect(author.getUuid(), author.getName(), banner);
                 }
             }

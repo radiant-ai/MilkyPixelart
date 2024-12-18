@@ -9,6 +9,7 @@ import fun.milkyway.milkypixelart.listeners.*;
 import fun.milkyway.milkypixelart.utils.ActiveFrame;
 import fun.milkyway.milkypixelart.utils.Utils;
 import fun.milkyway.milkypixelart.utils.Versions;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -246,7 +247,7 @@ public class PixelartManager extends ArtManager {
     private void renderArtFromItemStack(@NotNull Player player, @NotNull ItemStack stack) {
         UUID playerUUID = player.getUniqueId();
         renderArtToUser(player, stack).thenAccept(result -> {
-            Bukkit.getScheduler().runTask(MilkyPixelart.getInstance(), () -> {
+            Bukkit.getAsyncScheduler().runNow(MilkyPixelart.getInstance(), t -> {
                 Player player1 = Bukkit.getPlayer(playerUUID);
 
                 if (player1 == null || !player1.isOnline()) {
@@ -278,8 +279,8 @@ public class PixelartManager extends ArtManager {
         Location l = Utils.calculatePlayerFace(player);
 
         int id = createItemFrame(player, l);
-        var task = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killFrame(player),
-                MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100));
+        var task = Bukkit.getAsyncScheduler().runDelayed(plugin, t -> killFrame(player),
+                MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100), TimeUnit.MILLISECONDS);
 
         saveFrame(player, id, task);
 
@@ -323,7 +324,7 @@ public class PixelartManager extends ArtManager {
         return id;
     }
 
-    private CompletableFuture<Boolean> populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack mapItemStack) {
+    private @NotNull CompletableFuture<Boolean> populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack mapItemStack) {
         CompletableFuture<Boolean> result = new CompletableFuture<>();
         MapMeta mapMeta = (MapMeta) mapItemStack.getItemMeta();
         if (mapMeta.hasMapView()) {
@@ -404,9 +405,9 @@ public class PixelartManager extends ArtManager {
         }
     }
 
-    private void saveFrame(@NotNull Player player, int frameId, BukkitTask bukkitTask) {
+    private void saveFrame(@NotNull Player player, int frameId, ScheduledTask scheduledTask) {
         killFrame(player);
-        activeFrames.put(player.getUniqueId(), new ActiveFrame(frameId, bukkitTask));
+        activeFrames.put(player.getUniqueId(), new ActiveFrame(frameId, scheduledTask));
     }
 
     private void killFrame(@NotNull Player player) {

@@ -3,6 +3,8 @@ package fun.milkyway.milkypixelart.listeners;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.managers.LangManager;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +13,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
 
 public class MapCreateListener implements Listener {
 
@@ -20,8 +23,7 @@ public class MapCreateListener implements Listener {
             return;
         }
 
-        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK) &&
-                        !event.getAction().equals(Action.RIGHT_CLICK_AIR)) {
+        if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getAction().equals(Action.RIGHT_CLICK_AIR)) {
             return;
         }
 
@@ -39,9 +41,10 @@ public class MapCreateListener implements Listener {
     }
 
     private boolean canBuild(@NotNull Player player) {
-        var block = player.getWorld().getHighestBlockAt(player.getLocation());
-        var blockPlaceEvent = new BlockBreakEvent(block, player);
-        blockPlaceEvent.callEvent();
-        return !blockPlaceEvent.isCancelled();
+        var block = player.getWorld().getBlockAt(player.getLocation());
+        var blockBreakEvent = new BlockBreakEvent(block, player);
+        blockBreakEvent.callEvent();
+        return !blockBreakEvent.isCancelled();
     }
+
 }
