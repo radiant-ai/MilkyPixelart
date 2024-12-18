@@ -49,8 +49,7 @@ public class BannerProtectionListener implements Listener {
                         if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                             inventory.setResult(null);
                             player.sendMessage(LangManager.getInstance().getLang("copy.banner.fail_not_your_banner"));
-                        }
-                        else {
+                        } else {
                             ItemStack result = artManager.getUnprotectedCopy(copiedBanner);
                             result.setAmount(1);
                             inventory.setResult(result);
@@ -72,8 +71,7 @@ public class BannerProtectionListener implements Listener {
                         }
                         inventory.setResult(resultShield);
                     }
-                }
-                else {
+                } else {
                     inventory.setResult(null);
                 }
             }
@@ -92,9 +90,9 @@ public class BannerProtectionListener implements Listener {
     public void onBannerCopyOversize(InventoryClickEvent event) {
         BannerManager artManager = BannerManager.getInstance();
         if (event.getView().getTopInventory() instanceof CraftingInventory craftingInventory
-        && event.getSlotType().equals(InventoryType.SlotType.RESULT)
-        && event.getCurrentItem() != null
-        && ArtManager.isBanner(event.getCurrentItem())) {
+                && event.getSlotType().equals(InventoryType.SlotType.RESULT)
+                && event.getCurrentItem() != null
+                && ArtManager.isBanner(event.getCurrentItem())) {
             ItemStack banner = event.getCurrentItem().clone();
             if (artManager.patternNumber(banner) > 6) {
                 switch (event.getAction()) {
@@ -109,8 +107,7 @@ public class BannerProtectionListener implements Listener {
                             patteredBanner.setAmount(1);
                             newMatrix[0] = patteredBanner;
                             craftingInventory.setMatrix(newMatrix);
-                        }
-                        else {
+                        } else {
                             event.setCancelled(true);
                         }
                     }
@@ -157,12 +154,10 @@ public class BannerProtectionListener implements Listener {
                 if (ArtManager.isBanner(itemStack) &&
                         BannerManager.getInstance().patternNumber(itemStack) == 0) {
                     clearBanners.add(itemStack);
-                }
-                else if (ArtManager.isBanner(itemStack) &&
+                } else if (ArtManager.isBanner(itemStack) &&
                         BannerManager.getInstance().patternNumber(itemStack) > 0) {
                     patternedBanners.add(itemStack);
-                }
-                else if (!itemStack.getType().equals(Material.AIR)) {
+                } else if (!itemStack.getType().equals(Material.AIR)) {
                     otherItems.add(itemStack);
                 }
             }

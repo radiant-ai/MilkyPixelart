@@ -38,12 +38,12 @@ public class PixelartProtectionListener implements Listener {
             if (filledMaps.stream().anyMatch(itemStack -> artManager.getAuthor(itemStack) != null)) {
                 player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_need_cartography_table"));
                 inventory.setResult(null);
-                MilkyPixelart.getInstance().getServer().getAsyncScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
+                MilkyPixelart.getInstance().getServer().getGlobalRegionScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
                     Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                     if (newPlayer != null) {
                         newPlayer.closeInventory();
                     }
-                },1, TimeUnit.SECONDS);
+                }, 1);
             }
         }
     }
@@ -73,16 +73,15 @@ public class PixelartProtectionListener implements Listener {
                     event.setResult(result);
                     messageOnceManager.sendMessageOnce(player,
                             LangManager.getInstance().getLang("copy.pixelart.unprotected_reminder"));
-                }
-                else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
+                } else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);
                     player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_not_your_pixelart"));
-                    MilkyPixelart.getInstance().getServer().getAsyncScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
+                    MilkyPixelart.getInstance().getServer().getGlobalRegionScheduler().runDelayed(MilkyPixelart.getInstance(), t -> {
                         Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                         if (newPlayer != null) {
                             newPlayer.closeInventory();
                         }
-                    },1, TimeUnit.SECONDS);
+                    }, 1);
                 }
             }
         }
@@ -92,9 +91,9 @@ public class PixelartProtectionListener implements Listener {
         List<ItemStack> maps = new ArrayList<>();
         for (ItemStack itemStack : itemStacks) {
             if (itemStack != null && itemStack.getType().equals(Material.FILLED_MAP)) {
-                maps .add(itemStack);
+                maps.add(itemStack);
             }
         }
-        return maps ;
+        return maps;
     }
 }

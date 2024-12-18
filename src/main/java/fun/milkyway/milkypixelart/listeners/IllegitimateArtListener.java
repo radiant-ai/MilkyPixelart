@@ -33,8 +33,8 @@ public class IllegitimateArtListener implements Listener {
             if (itemStack.getType().equals(Material.FILLED_MAP)) {
                 if (!pixelartManager.isLegitimateOwner(itemStack)) {
                     itemFrame.setItem(null);
-                    MilkyPixelart.getInstance().getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+itemFrame.getLocation());
-                    plugin.getLogger().info(ChatColor.DARK_GREEN+"Map id: "+pixelartManager.getMapId(itemStack));
+                    MilkyPixelart.getInstance().getLogger().info(ChatColor.DARK_GREEN + "Removed an illegitimate pixelart at: " + itemFrame.getLocation());
+                    plugin.getLogger().info(ChatColor.DARK_GREEN + "Map id: " + pixelartManager.getMapId(itemStack));
                 }
             }
         }
@@ -49,14 +49,13 @@ public class IllegitimateArtListener implements Listener {
                 if (!pixelartManager.isLegitimateOwner(entry.getValue())) {
                     event.getInventory().clear(entry.getKey());
                     if (event.getInventory().getLocation() != null) {
-                        plugin.getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate pixelart at: "+event.getInventory().getLocation());
-                    }
-                    else {
-                        plugin.getLogger().info(ChatColor.DARK_GREEN+"Removed an illegitimate art from "+
+                        plugin.getLogger().info(ChatColor.DARK_GREEN + "Removed an illegitimate pixelart at: " + event.getInventory().getLocation());
+                    } else {
+                        plugin.getLogger().info(ChatColor.DARK_GREEN + "Removed an illegitimate art from " +
                                 PlainTextComponentSerializer.plainText().serialize(event.getView().title()) +
-                                " of player "+player.getName());
+                                " of player " + player.getName());
                     }
-                    plugin.getLogger().info(ChatColor.DARK_GREEN+"Map id: "+pixelartManager.getMapId(entry.getValue()));
+                    plugin.getLogger().info(ChatColor.DARK_GREEN + "Map id: " + pixelartManager.getMapId(entry.getValue()));
                 }
             }
         }

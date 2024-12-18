@@ -137,9 +137,9 @@ public class BannerPaintListener implements Listener {
             for (int j = -4; j < 5; j++) {
                 for (int k = -1; k < 2; k++) {
                     Block block = bannerBlock.getLocation().getWorld().getBlockAt(
-                            bannerBlock.getLocation().getBlockX()+i,
-                            bannerBlock.getLocation().getBlockY()+k,
-                            bannerBlock.getLocation().getBlockZ()+j);
+                            bannerBlock.getLocation().getBlockX() + i,
+                            bannerBlock.getLocation().getBlockY() + k,
+                            bannerBlock.getLocation().getBlockZ() + j);
                     if (block.getType().equals(Material.LOOM)) {
                         return true;
                     }

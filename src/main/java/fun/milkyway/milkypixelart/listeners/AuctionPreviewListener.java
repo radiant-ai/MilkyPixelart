@@ -24,7 +24,7 @@ public class AuctionPreviewListener implements Listener {
                 event.getWhoClicked() instanceof Player player) {
             String invName = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
             if (MilkyPixelart.getInstance().getConfiguration().getBoolean("pixelarts.previewEverywhere", false)
-                    ||  Utils.containsAny(invName, MilkyPixelart.getInstance().getConfiguration().getStringList("pixelarts.previewInventories"))) {
+                    || Utils.containsAny(invName, MilkyPixelart.getInstance().getConfiguration().getStringList("pixelarts.previewInventories"))) {
 
                 ItemStack stack = event.getCurrentItem();
 
