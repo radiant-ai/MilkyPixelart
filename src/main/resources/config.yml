@@ -15,5 +15,6 @@ pixelarts:
     - "Market"
     - "Shop"
   respectRegionProtection: true
+  worldMapArt: world_map_art
 lang: en
 bStats: true
