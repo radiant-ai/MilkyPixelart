@@ -2,18 +2,22 @@ package fun.milkyway.milkypixelart.managers;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.*;
-import com.comphenix.protocol.wrappers.WrappedDataValue;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.*;
 import fun.milkyway.milkypixelart.utils.ActiveFrame;
 import fun.milkyway.milkypixelart.utils.Utils;
-import fun.milkyway.milkypixelart.utils.Versions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
@@ -22,6 +26,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.map.CraftMapRenderer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -309,14 +316,7 @@ public class PixelartManager extends ArtManager {
         pc.getIntegers().write(2, 0);
         pc.getIntegers().write(3, 0);
 
-        switch (Versions.getVersionLevel()) {
-            case v1_18 -> {
-                pc.getIntegers().write(6, direction);
-            }
-            case v1_20,v1_21 -> {
-                pc.getIntegers().write(4, direction);
-            }
-        }
+        pc.getIntegers().write(4, direction);
 
         protocolManager.sendServerPacket(player, pc);
 
@@ -347,29 +347,14 @@ public class PixelartManager extends ArtManager {
 
     private void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack item) {
         try {
+            var packet = new ClientboundSetEntityDataPacket(itemFrameId, List.of(
+                    new SynchedEntityData.DataValue<>(0, EntityDataSerializers.BYTE, (byte) 0x20),
+                    new SynchedEntityData.DataValue<>(8, EntityDataSerializers.ITEM_STACK, CraftItemStack.unwrap(item))
+            ));
             PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
             pc.getIntegers().write(0, itemFrameId);
 
-            switch (Versions.getVersionLevel()) {
-                case v1_18 -> {
-                    WrappedDataWatcher watcher = new WrappedDataWatcher();
-                    watcher.setEntity(player);
-                    watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), item);
-                    pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
-                }
-                case v1_20, v1_21 -> {
-                    Class<?> craftItemStackClass = Class.forName("org.bukkit.craftbukkit."+Versions.getNMSVersion()+".inventory.CraftItemStack");
-                    Method asNMSCopyMethod = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
-                    Object nmsItemStack = asNMSCopyMethod.invoke(null, item);
-                    var values = List.of(
-                            new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20),
-                            new WrappedDataValue(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), nmsItemStack)
-                    );
-                    pc.getDataValueCollectionModifier().write(0, values);
-                }
-            }
-
-            protocolManager.sendServerPacket(player, pc);
+            protocolManager.sendServerPacket(player, PacketContainer.fromPacket(packet));
         } catch (Exception e) {
             MilkyPixelart.getInstance().getLogger().log(Level.WARNING, "Error sending map packet", e);
         }
@@ -377,26 +362,13 @@ public class PixelartManager extends ArtManager {
 
     private void sendMapPacket(@NotNull Player player, int mapId,  byte @NotNull [] bytes) {
         try {
-            Class<?> worldMapBClass = Class.forName("net.minecraft.world.level.saveddata.maps.WorldMap$b");
-            Class<?> packetPlayOutMapClass = Class.forName("net.minecraft.network.protocol.game.PacketPlayOutMap");
-
-            Constructor<?> worldMapBConstructor = worldMapBClass.getDeclaredConstructor(int.class, int.class, int.class, int.class, byte[].class);
-
-
-            Object worldMapBInstance = worldMapBConstructor.newInstance(0, 0, 128, 128, bytes);
-            Object packetPlayOutMapInstance;
-            if (Versions.getVersionLevel() == Versions.VersionLevel.v1_21) {
-                Class<?> mapIdClass = Class.forName("net.minecraft.world.level.saveddata.maps.MapId");
-                Constructor<?> mapIdConstructor = mapIdClass.getDeclaredConstructor(int.class);
-                Object mapIdInstance = mapIdConstructor.newInstance(mapId);
-                Constructor<?> packetPlayOutMapConstructor = packetPlayOutMapClass.getDeclaredConstructor(mapIdClass, byte.class, boolean.class, Collection.class, worldMapBClass);
-                packetPlayOutMapInstance = packetPlayOutMapConstructor.newInstance(mapIdInstance, (byte) 4, false, null, worldMapBInstance);
-            }
-            else {
-                Constructor<?> packetPlayOutMapConstructor = packetPlayOutMapClass.getDeclaredConstructor(int.class, byte.class, boolean.class, Collection.class, worldMapBClass);
-                packetPlayOutMapInstance = packetPlayOutMapConstructor.newInstance(mapId, (byte) 4, false, null, worldMapBInstance);
-            }
-            PacketContainer pc = PacketContainer.fromPacket(packetPlayOutMapInstance);
+            var packet = new ClientboundMapItemDataPacket(
+                    new MapId(mapId),
+                    (byte) 0,
+                    true,
+                    Optional.empty(),
+                    Optional.of(new MapItemSavedData.MapPatch(0, 0, 128, 128, bytes)));
+            PacketContainer pc = PacketContainer.fromPacket(packet);
 
             protocolManager.sendServerPacket(player, pc);
         } catch (Exception e) {
@@ -460,31 +432,11 @@ public class PixelartManager extends ArtManager {
     }
 
     private byte[] getMapBytesLive(int id) {
-        var map = Bukkit.getMap(id);
-        if (map == null) {
-            return null;
-        }
-        if (map.getRenderers().isEmpty()) {
-            return null;
-        }
-        var renderer = map.getRenderers().get(0);
-
         try {
-            Class<?> craftMapRendererClass = Class.forName("org.bukkit.craftbukkit."+Versions.getNMSVersion()+".map.CraftMapRenderer");
-            Class<?> worldMapClass = Class.forName("net.minecraft.world.level.saveddata.maps.WorldMap");
+            var server = MinecraftServer.getServer();
 
-            if (!craftMapRendererClass.isInstance(renderer)) {
-                return null;
-            }
-
-            Field worldMapField = craftMapRendererClass.getDeclaredField("worldMap");
-            worldMapField.setAccessible(true);
-            Object worldMap = worldMapField.get(renderer);
-
-            Field gField = worldMapClass.getDeclaredField("g");
-            gField.setAccessible(true);
-
-            return (byte[]) gField.get(worldMap);
+            var mapData = server.getLevel(net.minecraft.world.level.Level.OVERWORLD).getMapData(new MapId(id));
+            return mapData.colors;
 
         } catch (Exception e) {
             MilkyPixelart.getInstance().getLogger().log(Level.WARNING, "Error getting map bytes", e);
