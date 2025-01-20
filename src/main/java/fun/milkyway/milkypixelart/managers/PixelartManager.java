@@ -29,7 +29,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.*;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +84,7 @@ public class PixelartManager extends ArtManager {
         return instance;
     }
 
-    public synchronized static CompletableFuture<PixelartManager> reload() {
+    public synchronized static @NotNull CompletableFuture<PixelartManager> reload() {
         CompletableFuture<PixelartManager> result = new CompletableFuture<>();
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
@@ -310,13 +309,8 @@ public class PixelartManager extends ArtManager {
         pc.getIntegers().write(2, 0);
         pc.getIntegers().write(3, 0);
 
-        switch (Versions.getVersionLevel()) {
-            case v1_18 -> {
-                pc.getIntegers().write(6, direction);
-            }
-            case v1_20,v1_21 -> {
-                pc.getIntegers().write(4, direction);
-            }
+        if (Objects.requireNonNull(Versions.getVersionLevel()) == Versions.VersionLevel.v1_21) {
+            pc.getIntegers().write(4, direction);
         }
 
         protocolManager.sendServerPacket(player, pc);
@@ -351,23 +345,15 @@ public class PixelartManager extends ArtManager {
             PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
             pc.getIntegers().write(0, itemFrameId);
 
-            switch (Versions.getVersionLevel()) {
-                case v1_18 -> {
-                    WrappedDataWatcher watcher = new WrappedDataWatcher();
-                    watcher.setEntity(player);
-                    watcher.setObject(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), item);
-                    pc.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
-                }
-                case v1_20, v1_21 -> {
-                    Class<?> craftItemStackClass = Class.forName("org.bukkit.craftbukkit."+Versions.getNMSVersion()+".inventory.CraftItemStack");
-                    Method asNMSCopyMethod = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
-                    Object nmsItemStack = asNMSCopyMethod.invoke(null, item);
-                    var values = List.of(
-                            new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20),
-                            new WrappedDataValue(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), nmsItemStack)
-                    );
-                    pc.getDataValueCollectionModifier().write(0, values);
-                }
+            if (Objects.requireNonNull(Versions.getVersionLevel()) == Versions.VersionLevel.v1_21) {
+                Class<?> craftItemStackClass = Class.forName("org.bukkit.craftbukkit." + Versions.getNMSVersion() + ".inventory.CraftItemStack");
+                Method asNMSCopyMethod = craftItemStackClass.getDeclaredMethod("asNMSCopy", ItemStack.class);
+                Object nmsItemStack = asNMSCopyMethod.invoke(null, item);
+                var values = List.of(
+                        new WrappedDataValue(0, WrappedDataWatcher.Registry.get(Byte.class), (byte) 0x20),
+                        new WrappedDataValue(8, WrappedDataWatcher.Registry.getItemStackSerializer(false), nmsItemStack)
+                );
+                pc.getDataValueCollectionModifier().write(0, values);
             }
 
             protocolManager.sendServerPacket(player, pc);
@@ -460,7 +446,7 @@ public class PixelartManager extends ArtManager {
         return getMapBytesFromFile(mapFile);
     }
 
-    private byte[] getMapBytesLive(int id) {
+    private byte @Nullable [] getMapBytesLive(int id) {
         var map = Bukkit.getMap(id);
         if (map == null) {
             return null;
@@ -601,7 +587,7 @@ public class PixelartManager extends ArtManager {
         return uuid;
     }
 
-    private CompletableFuture<IOException> saveBlacklistAsync() {
+    private @NotNull CompletableFuture<IOException> saveBlacklistAsync() {
         plugin.getLogger().info(ChatColor.YELLOW+"Async save blacklist...");
         CompletableFuture<IOException> completableFuture = new CompletableFuture<>();
         executorService.submit(() -> {

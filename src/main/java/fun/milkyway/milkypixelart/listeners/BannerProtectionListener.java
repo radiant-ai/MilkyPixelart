@@ -5,8 +5,6 @@ import fun.milkyway.milkypixelart.managers.BannerManager;
 import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.utils.MessageOnceManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Banner;
@@ -33,7 +31,7 @@ public class BannerProtectionListener implements Listener {
     }
 
     @EventHandler
-    public void onBannerCopy(PrepareItemCraftEvent event) {
+    public void onBannerCopy(@NotNull PrepareItemCraftEvent event) {
         BannerManager artManager = BannerManager.getInstance();
         if (event.getInventory().getHolder() instanceof Player player) {
             CraftingInventory inventory = event.getInventory();

@@ -11,11 +11,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class AuctionPreviewListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onRightClick(InventoryClickEvent event) {
+    public void onRightClick(@NotNull InventoryClickEvent event) {
         if (event.getClick().isRightClick() &&
                 event.getClickedInventory() != null &&
                 event.getCurrentItem() != null &&
