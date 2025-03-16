@@ -1,6 +1,6 @@
 package fun.milkyway.milkypixelart.managers;
 
-import fun.milkyway.milkypixelart.utils.Utils;
+import fun.milkyway.milkypixelart.utils.OrientationUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -163,13 +163,13 @@ public class CopyrightManager {
             ListIterator<Component> iterator = lore.listIterator();
             while(iterator.hasNext()){
                 String line = PlainTextComponentSerializer.plainText().serialize(iterator.next());
-                if(Utils.containsAny(line, LangManager.getInstance().getLangPlainList("copyright.legacy"))
+                if(LangManager.getInstance().getLangPlainList("copyright.legacy").stream().anyMatch(line::contains)
                         || line.contains(LangManager.getInstance().getLangPlain("copyright.title"))
                         || line.contains(LangManager.getInstance().getLangPlain("copyright.author", ""))) {
                     iterator.remove();
                 }
             }
-            if (lore.size() == 0) {
+            if (lore.isEmpty()) {
                 lore = null;
             }
         }

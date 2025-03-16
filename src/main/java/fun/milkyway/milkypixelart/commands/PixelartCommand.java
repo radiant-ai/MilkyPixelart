@@ -130,20 +130,22 @@ public class PixelartCommand extends BaseCommand {
     @CommandPermission("pixelart.preview")
     @Subcommand("preview")
     @CommandCompletion("map_id")
-    public void onPreview(Player player, Integer mapId) {
-        PixelartManager.getInstance().renderArt(player, mapId);
+    public void onPreview(Player player, String mapUuid) {
+        PixelartManager.getInstance().renderBundle(player, UUID.fromString(mapUuid));
     }
 
     @CommandPermission("pixelart.show")
     @Subcommand("show")
-    public void onShow(Player player) {
-        PixelartManager.getInstance().showMaps(player, false);
+    @CommandCompletion("l|g|local|global")
+    public void onShow(Player player, String localOrGlobal) {
+        PixelartManager.getInstance().showMaps(player, false, localOrGlobal.toLowerCase().startsWith("l"));
     }
 
     @CommandPermission("pixelart.showall")
     @Subcommand("showall")
-    public void onShowAll(Player player) {
-        PixelartManager.getInstance().showMaps(player, true);
+    @CommandCompletion("l|g|local|global")
+    public void onShowAll(Player player, String localOrGlobal) {
+        PixelartManager.getInstance().showMaps(player, true, localOrGlobal.toLowerCase().startsWith("l"));
     }
 
     @CommandPermission("pixelart.reload")

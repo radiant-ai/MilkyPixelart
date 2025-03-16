@@ -96,6 +96,10 @@ help:
     - "<#9AFF0F>- <#FFFF99>Preview pixel arts right from the market GUI, just right click on the map in inventory view"
     - "<#9AFF0F>- <#FFFF99>Prevent players from creating maps in protected regions (regions should reach the maximum height)"
     - ""
+    - "<#9AFF0F>- <#FFFF99>Creating a bundle with art maps:"
+    - "<#9AFF0F>- <#FFFF99>1. Rename the bundle to \"Name <width>x<height>\""
+    - "<#9AFF0F>- <#FFFF99>2. Place the maps in the bundle in order from left to right"
+    - ""
   prices:
     pixelart: "<#9AFF0F>Protect pixel art <#FFFF99>- <#9AFF0F><arg1>$"
     banner: "<#9AFF0F>Protect banner <#FFFF99>- <#9AFF0F><arg1>$"

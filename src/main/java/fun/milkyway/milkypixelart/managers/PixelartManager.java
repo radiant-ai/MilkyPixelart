@@ -1,23 +1,17 @@
 package fun.milkyway.milkypixelart.managers;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.events.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.*;
-import fun.milkyway.milkypixelart.utils.ActiveFrame;
-import fun.milkyway.milkypixelart.utils.Utils;
+import fun.milkyway.milkypixelart.utils.BundleArt;
+import fun.milkyway.milkypixelart.utils.MaterialUtils;
+import fun.milkyway.milkypixelart.utils.OrientationUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.saveddata.maps.MapId;
-import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
@@ -26,43 +20,38 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.map.CraftMapRenderer;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.GlowItemFrame;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.*;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.stream.IntStream;
 
 public class PixelartManager extends ArtManager {
+    public static final String BLACKLIST_FILENAME = "blacklist.yml";
+    private static final NamespacedKey PREVIEW_ART_KEY = new NamespacedKey(MilkyPixelart.getInstance(), "previewArt");
     private static PixelartManager instance;
 
     private final Random random;
     private final ThreadPoolExecutor executorService;
 
-    private Map<Integer, UUID> blackList;
-
-    public static final String BLACKLIST_FILENAME = "blacklist.yml";
-
-    private final Map<Integer, ItemStack> previewMapKeys;
-    private final Map<UUID, Long> lastShowMap;
-
-    private final Map<UUID, ActiveFrame> activeFrames;
+    private final Map<Integer, UUID> blackList;
+    private final Map<UUID, Long> lastMapShownTime;
+    private final Map<UUID, List<Entity>> previewArts;
+    private final Cache<UUID, BundleArt> previewBundles;
 
     //SIGNLETON
     private PixelartManager() {
@@ -72,9 +61,12 @@ public class PixelartManager extends ArtManager {
         executorService.setMaximumPoolSize(2);
 
         random = new Random();
-        previewMapKeys = new HashMap<>();
-        lastShowMap = new HashMap<>();
-        activeFrames = new HashMap<>();
+        blackList = new ConcurrentHashMap<>();
+        lastMapShownTime = new HashMap<>();
+        previewArts = new HashMap<>();
+        previewBundles = CacheBuilder.newBuilder()
+                .expireAfterAccess(5, TimeUnit.MINUTES)
+                .build();
 
         loadBlacklist();
 
@@ -140,7 +132,7 @@ public class PixelartManager extends ArtManager {
         return MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.copyrightPrice");
     }
 
-    public void showMaps(@NotNull Player player, boolean all) {
+    public void showMaps(@NotNull Player player, boolean all, boolean local) {
         long cooldown = getShowCooldown(player.getUniqueId());
         if (cooldown > 0 && !player.hasPermission("pixelart.show.cooldownbypass")) {
             player.sendMessage(LangManager.getInstance().getLang("show.fail_cooldown", ""+cooldown));
@@ -164,7 +156,14 @@ public class PixelartManager extends ArtManager {
         }
         Component message = LangManager.getInstance().getLang(
                 "show.message", player.getName(), MiniMessage.miniMessage().serialize(component));
-        MilkyPixelart.getInstance().getServer().broadcast(message, "pixelart.preview");
+        if (local) {
+            player.getLocation().getNearbyPlayers(100).forEach(p -> {
+                p.sendMessage(message);
+            });
+        }
+        else {
+            MilkyPixelart.getInstance().getServer().broadcast(message, "pixelart.preview");
+        }
         putOnCooldown(player.getUniqueId());
     }
 
@@ -196,30 +195,31 @@ public class PixelartManager extends ArtManager {
     }
 
     public void putOnCooldown(@NotNull UUID uuid) {
-        lastShowMap.put(uuid, System.currentTimeMillis());
+        lastMapShownTime.put(uuid, System.currentTimeMillis());
     }
 
     public long getShowCooldown(@NotNull UUID uuid) {
-        if (!lastShowMap.containsKey(uuid)) {
+        if (!lastMapShownTime.containsKey(uuid)) {
             return 0;
         }
         int cooldown = MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.showArtCooldown");
-        if (lastShowMap.get(uuid) + cooldown * 1000L < System.currentTimeMillis()) {
-            lastShowMap.remove(uuid);
+        if (lastMapShownTime.get(uuid) + cooldown * 1000L < System.currentTimeMillis()) {
+            lastMapShownTime.remove(uuid);
             return 0;
         }
-        return (lastShowMap.get(uuid) - System.currentTimeMillis()) / 1000L + cooldown;
+        return (lastMapShownTime.get(uuid) - System.currentTimeMillis()) / 1000L + cooldown;
     }
 
     private @Nullable Component createPreviewComponent(@NotNull ItemStack itemStack, @NotNull String name) {
-        if (!itemStack.getType().equals(Material.FILLED_MAP)) {
+        BundleArt bundleArt = null;
+        if (itemStack.getType() == Material.FILLED_MAP || MaterialUtils.isBundle(itemStack.getType())) {
+            bundleArt = BundleArt.of(itemStack);
+        }
+        if (bundleArt == null) {
             return null;
         }
-        MapMeta mapMeta = (MapMeta) itemStack.getItemMeta();
-        if (!mapMeta.hasMapView() || mapMeta.getMapView() == null) {
-            return null;
-        }
-        previewMapKeys.put(mapMeta.getMapView().getId(), itemStack.clone());
+        var uuid = UUID.randomUUID();
+        previewBundles.put(uuid, bundleArt);
 
         TextComponent.Builder builder = Component.text();
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -227,175 +227,102 @@ public class PixelartManager extends ArtManager {
             var displayName = itemMeta.displayName();
             if (displayName != null) {
                 builder.append(LangManager.getInstance().getLang("show.map_component",
-                        mapMeta.getMapView().getId()+"",
+                        uuid+"",
                         PlainTextComponentSerializer.plainText().serialize(displayName)));
             }
         }
         else {
             builder.append(LangManager.getInstance().getLang("show.map_component",
-                    mapMeta.getMapView().getId()+"",
+                    uuid+"",
                     LangManager.getInstance().getLangPlain("show.map_default_name")));
         }
         builder.hoverEvent(HoverEvent.showText(LangManager.getInstance().getLang("show.click_to_preview", name)));
         return builder.build();
     }
 
-    public void renderArt(@NotNull Player player, int mapId) {
-        if (previewMapKeys.containsKey(mapId)) {
-            renderArtFromItemStack(player, previewMapKeys.get(mapId));
+    public boolean renderBundle(@NotNull Player player, UUID bundleUuid) {
+        var bundleArt = previewBundles.getIfPresent(bundleUuid);
+        if (bundleArt == null) {
+            return false;
         }
+        renderArts(player, bundleArt.getItemStacks(), bundleArt.getWidth(), bundleArt.getHeight());
+        return true;
     }
 
-    public void renderArt(@NotNull Player player, @NotNull ItemStack stack) {
-        renderArtFromItemStack(player, stack);
+    public boolean renderBundle(@NotNull Player player, @NotNull ItemStack stack) {
+        var bundleArt = BundleArt.of(stack);
+        if (bundleArt == null) {
+            return false;
+        }
+        renderArts(player, bundleArt.getItemStacks(), bundleArt.getWidth(), bundleArt.getHeight());
+        return true;
     }
 
-    private void renderArtFromItemStack(@NotNull Player player, @NotNull ItemStack stack) {
-        UUID playerUUID = player.getUniqueId();
-        renderArtToUser(player, stack).thenAccept(result -> {
-            Bukkit.getScheduler().runTask(MilkyPixelart.getInstance(), () -> {
-                Player player1 = Bukkit.getPlayer(playerUUID);
+    public boolean renderArts(@NotNull Player player, @NotNull List<ItemStack> stacks, int width, int height) {
+        var playerUuid = player.getUniqueId();
+        clearPreviewArts(playerUuid);
 
-                if (player1 == null || !player1.isOnline()) {
-                    return;
-                }
+        var face = OrientationUtils.calculateOpositeBlockFace(player.getLocation().getYaw());
+        var grid = OrientationUtils.calculateGridInFrontOfPlayer(player.getLocation(), 2, width, height);
 
-                if (result) {
-                    if (player1.getVehicle() != null) {
-                        player1.leaveVehicle();
-                    }
-                    Location l = player1.getLocation();
-                    l.setPitch(0);
-                    l.setYaw(Utils.alignYaw(l));
-                    player1.teleport(l);
-                    player1.sendActionBar(LangManager.getInstance().getLang("preview.success"));
+        var itemFrames = IntStream.range(0, grid.size()).mapToObj(i -> {
+            var stack = stacks.get(i);
+            var location = grid.get(i);
+            return player.getWorld().spawn(location, GlowItemFrame.class, glowItemFrame -> {
+                glowItemFrame.setPersistent(false);
+                glowItemFrame.setInvulnerable(true);
+                glowItemFrame.setFixed(true);
+                glowItemFrame.setItem(stack, false);
+                glowItemFrame.setVisible(false);
+                glowItemFrame.setFacingDirection(face, true);
+                glowItemFrame.getPersistentDataContainer().set(PREVIEW_ART_KEY, PersistentDataType.BYTE, (byte) 1);
+            });
+        }).map(f -> (Entity) f).toList();
+
+        MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+            itemFrames.forEach(entity -> {
+                if (entity.isValid()) {
+                    entity.remove();
                 }
-                else {
-                    player1.sendActionBar(LangManager.getInstance().getLang("preview.fail"));
-                }
+            });
+        }, MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100));
+
+        MilkyPixelart.getInstance().getServer().getOnlinePlayers().forEach(p -> {
+            if (p.getUniqueId() == player.getUniqueId()) {
+                // do not hide for self
+                return;
+            }
+            itemFrames.forEach(itemFrame -> {
+                p.hideEntity(MilkyPixelart.getInstance(), itemFrame);
+            });
+        });
+
+        previewArts.put(player.getUniqueId(), itemFrames);
+
+        return true;
+    }
+
+    public void hidePreviewArts(@NotNull Player player) {
+        previewArts.values().forEach(itemFrames -> {
+            itemFrames.forEach(itemFrame -> {
+                player.hideEntity(MilkyPixelart.getInstance(), itemFrame);
             });
         });
     }
 
-    private CompletableFuture<Boolean> renderArtToUser(@NotNull Player player, @NotNull ItemStack itemStack) {
-        if (!itemStack.getType().equals(Material.FILLED_MAP)) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        Location l = Utils.calculatePlayerFace(player);
-
-        int id = createItemFrame(player, l);
-        var task = Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> killFrame(player),
-                MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100));
-
-        saveFrame(player, id, task);
-
-        if (id == 0) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        return populateItemFrame(player, id, itemStack);
-    }
-
-    private int createItemFrame(@NotNull Player player, @NotNull Location l) {
-        int direction = Utils.getDirection(l);
-        int id = Integer.MAX_VALUE - random.nextInt() % 100000;
-
-        PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.SPAWN_ENTITY);
-
-        //Entity
-        pc.getEntityTypeModifier().write(0, EntityType.GLOW_ITEM_FRAME);
-        pc.getUUIDs().write(0, UUID.randomUUID());
-        pc.getIntegers().write(0, id);
-        //Pos
-        pc.getDoubles().write(0, (double) l.getBlockX());
-        pc.getDoubles().write(1, (double) l.getBlockY());
-        pc.getDoubles().write(2, (double) l.getBlockZ());
-        //Velocity
-        pc.getIntegers().write(1, 0);
-        pc.getIntegers().write(2, 0);
-        pc.getIntegers().write(3, 0);
-
-        pc.getIntegers().write(4, direction);
-
-        protocolManager.sendServerPacket(player, pc);
-
-        return id;
-    }
-
-    private CompletableFuture<Boolean> populateItemFrame(@NotNull Player player, int id, @NotNull ItemStack mapItemStack) {
-        CompletableFuture<Boolean> result = new CompletableFuture<>();
-        MapMeta mapMeta = (MapMeta) mapItemStack.getItemMeta();
-        if (mapMeta.hasMapView()) {
-            MapView mapView = mapMeta.getMapView();
-
-            if (mapView == null) {
-                return CompletableFuture.completedFuture(false);
-            }
-
-            var bytes = getMapBytesLive(mapView.getId());
-
-            sendMapPacket(player, id, mapItemStack);
-
-            if (bytes != null) {
-                sendMapPacket(player, mapView.getId(), bytes);
-            }
-        }
-
-        return result;
-    }
-
-    private void sendMapPacket(@NotNull Player player, int itemFrameId, @NotNull ItemStack item) {
-        try {
-            var packet = new ClientboundSetEntityDataPacket(itemFrameId, List.of(
-                    new SynchedEntityData.DataValue<>(0, EntityDataSerializers.BYTE, (byte) 0x20),
-                    new SynchedEntityData.DataValue<>(8, EntityDataSerializers.ITEM_STACK, CraftItemStack.unwrap(item))
-            ));
-            PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_METADATA);
-            pc.getIntegers().write(0, itemFrameId);
-
-            protocolManager.sendServerPacket(player, PacketContainer.fromPacket(packet));
-        } catch (Exception e) {
-            MilkyPixelart.getInstance().getLogger().log(Level.WARNING, "Error sending map packet", e);
+    public void clearPreviewArts(@NotNull UUID playerUuid) {
+        var removed = previewArts.remove(playerUuid);
+        if (removed != null) {
+            removed.forEach(entity -> {
+                if (entity.isValid()) {
+                    entity.remove();
+                }
+            });
         }
     }
 
-    private void sendMapPacket(@NotNull Player player, int mapId,  byte @NotNull [] bytes) {
-        try {
-            var packet = new ClientboundMapItemDataPacket(
-                    new MapId(mapId),
-                    (byte) 0,
-                    true,
-                    Optional.empty(),
-                    Optional.of(new MapItemSavedData.MapPatch(0, 0, 128, 128, bytes)));
-            PacketContainer pc = PacketContainer.fromPacket(packet);
-
-            protocolManager.sendServerPacket(player, pc);
-        } catch (Exception e) {
-            MilkyPixelart.getInstance().getLogger().log(Level.WARNING, "Error sending map packet", e);
-        }
-    }
-
-    private void saveFrame(@NotNull Player player, int frameId, BukkitTask bukkitTask) {
-        killFrame(player);
-        activeFrames.put(player.getUniqueId(), new ActiveFrame(frameId, bukkitTask));
-    }
-
-    private void killFrame(@NotNull Player player) {
-        var activeFrame = activeFrames.get(player.getUniqueId());
-        if (activeFrame == null) {
-            return;
-        }
-        killItemFrame(player, activeFrame.getFrameId());
-        activeFrame.getTask().cancel();
-        activeFrames.remove(player.getUniqueId());
-    }
-
-    private void killItemFrame(@NotNull Player p, int id) {
-        PacketContainer pc = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
-        pc.getIntLists().write(0, List.of(id));
-
-        protocolManager.sendServerPacket(p, pc);
+    public boolean isPreviewItemFrame(@NotNull Entity entity) {
+        return entity instanceof ItemFrame && entity.getPersistentDataContainer().has(PREVIEW_ART_KEY, PersistentDataType.BYTE);
     }
 
     public File getMapsDirectory() {
@@ -429,19 +356,6 @@ public class PixelartManager extends ArtManager {
     private byte[] getMapBytesOffline(int id) {
         File mapFile = new File(getMapsDirectory(), "map_"+id+".dat");
         return getMapBytesFromFile(mapFile);
-    }
-
-    private byte[] getMapBytesLive(int id) {
-        try {
-            var server = MinecraftServer.getServer();
-
-            var mapData = server.getLevel(net.minecraft.world.level.Level.OVERWORLD).getMapData(new MapId(id));
-            return mapData.colors;
-
-        } catch (Exception e) {
-            MilkyPixelart.getInstance().getLogger().log(Level.WARNING, "Error getting map bytes", e);
-            return null;
-        }
     }
 
     public CompletableFuture<List<String>> getDuplicates(@NotNull CommandSender commandSender, int mapId) {
@@ -517,7 +431,7 @@ public class PixelartManager extends ArtManager {
     }
 
     private void loadBlacklist() {
-        blackList = new ConcurrentHashMap<>();
+        blackList.clear();
         FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), BLACKLIST_FILENAME));
 
         ConfigurationSection configurationSection = fileConfiguration.getConfigurationSection("blacklist");
