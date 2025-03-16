@@ -19,8 +19,6 @@ jobs:
           echo "artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "minecraft_versions=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=minecraftVersions -q -DforceStdout=true)" >> $GITHUB_ENV
-      - name: Init Paper-Mojang mappings
-        run: mvn paper-nms:init
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
       - name: Copy jar files to staging
