@@ -25,8 +25,8 @@ Add the desired art maps to blacklist so they instantly get deleted on your serv
 
 ## Dependencies
 - Latest Paper
-- Latest ProtocolLib
 - Vault + any Economy plugin
+
 ## Configuration
 ```
 common:
