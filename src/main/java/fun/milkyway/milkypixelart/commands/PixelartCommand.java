@@ -52,23 +52,30 @@ public class PixelartCommand extends BaseCommand {
         }
 
         CopyrightManager.Author author = protectionManager.getAuthor(item);
-        if (author == null) {
-            int price = item.getAmount() * protectionManager.getProtectionCost();
-            if (plugin.getEconomy().getBalance(player)>=price) {
-                if (protectionManager.protect(player, item)) {
-                    plugin.getEconomy().withdrawPlayer(player, price);
-                    player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
-                }
-                else {
-                    player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
-                }
-            }
-            else {
-                player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
-            }
-        }
-        else {
+        if (author != null) {
             player.sendMessage(LangManager.getInstance().getLang("protect.fail_already_protected"));
+            return;
+        }
+
+        int price = item.getAmount() * protectionManager.getProtectionCost();
+        // Check if economy exists and player has enough money
+        if (plugin.getEconomy() != null && plugin.getEconomy().getBalance(player) < price) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
+            return;
+        }
+
+        if (!protectionManager.protect(player, item)) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
+            return;
+        }
+
+        // Only withdraw money if economy exists
+        if (plugin.getEconomy() != null) {
+            plugin.getEconomy().withdrawPlayer(player, price);
+            player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
+        } else {
+            // Protection is free when economy is null
+            player.sendMessage(LangManager.getInstance().getLang("protect.success", "0"));
         }
     }
 
