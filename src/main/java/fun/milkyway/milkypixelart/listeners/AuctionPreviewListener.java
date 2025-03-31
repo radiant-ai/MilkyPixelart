@@ -33,12 +33,12 @@ public class AuctionPreviewListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
-        if (MilkyPixelart.getInstance().getConfiguration().getBoolean("pixelarts.previewEverywhere", false)) {
+        if (MilkyPixelart.getInstance().getConfig().getBoolean("pixelarts.previewEverywhere", false)) {
             preview(player, event.getCurrentItem());
             return;
         }
         var currentInventoryName = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
-        var previewInventories = MilkyPixelart.getInstance().getConfiguration().getStringList("pixelarts.previewInventories");
+        var previewInventories = MilkyPixelart.getInstance().getConfig().getStringList("pixelarts.previewInventories");
         var isPreviewInventory = previewInventories.stream().anyMatch(currentInventoryName::contains);
         if (isPreviewInventory) {
             preview(player, event.getCurrentItem());

@@ -166,11 +166,11 @@ public final class MilkyPixelart extends JavaPlugin {
         return instance;
     }
 
-    public FileConfiguration getConfiguration() {
+    public @NotNull FileConfiguration getConfig() {
         return configuration;
     }
 
-    public FileConfiguration getLang() {
+    public @NotNull FileConfiguration getLang() {
         return lang;
     }
 

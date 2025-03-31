@@ -21,7 +21,7 @@ public class CommandAddons {
     }
 
     public static void loadAliases(PaperCommandManager paperCommandManager) {
-        List<String> aliasList = MilkyPixelart.getInstance().getConfiguration().getStringList("commands.aliases");
+        List<String> aliasList = MilkyPixelart.getInstance().getConfig().getStringList("commands.aliases");
         if (aliasList.isEmpty()) {
             throw new IllegalStateException("No command aliases found in the config.yml!");
         }
@@ -29,7 +29,7 @@ public class CommandAddons {
     }
 
     public static @NotNull String getAnyAlias() {
-        List<String> aliasList = MilkyPixelart.getInstance().getConfiguration().getStringList("commands.aliases");
+        List<String> aliasList = MilkyPixelart.getInstance().getConfig().getStringList("commands.aliases");
         if (aliasList.isEmpty()) {
             throw new IllegalStateException("No command aliases found in the config.yml!");
         }

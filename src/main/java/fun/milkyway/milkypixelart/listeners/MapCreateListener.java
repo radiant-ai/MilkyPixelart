@@ -16,7 +16,7 @@ public class MapCreateListener implements Listener {
 
     @EventHandler
     public void onMapUse(PlayerInteractEvent event) {
-        if (!MilkyPixelart.getInstance().getConfiguration().getBoolean("pixelarts.respectRegionProtection", false)) {
+        if (!MilkyPixelart.getInstance().getConfig().getBoolean("pixelarts.respectRegionProtection", false)) {
             return;
         }
 

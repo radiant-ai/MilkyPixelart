@@ -20,10 +20,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.GlowItemFrame;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.MapMeta;
@@ -74,6 +71,7 @@ public class PixelartManager extends ArtManager {
         registerListener(new AuctionPreviewListener());
         registerListener(new IllegitimateArtListener());
         registerListener(new MapCreateListener());
+        registerListener(new MapPreviewListener());
     }
 
     public static @NotNull PixelartManager getInstance() {
@@ -129,7 +127,7 @@ public class PixelartManager extends ArtManager {
 
     @Override
     public int getProtectionCost() {
-        return MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.copyrightPrice");
+        return MilkyPixelart.getInstance().getConfig().getInt("pixelarts.copyrightPrice");
     }
 
     public void showMaps(@NotNull Player player, boolean all, boolean local) {
@@ -202,7 +200,7 @@ public class PixelartManager extends ArtManager {
         if (!lastMapShownTime.containsKey(uuid)) {
             return 0;
         }
-        int cooldown = MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.showArtCooldown");
+        int cooldown = MilkyPixelart.getInstance().getConfig().getInt("pixelarts.showArtCooldown");
         if (lastMapShownTime.get(uuid) + cooldown * 1000L < System.currentTimeMillis()) {
             lastMapShownTime.remove(uuid);
             return 0;
@@ -268,6 +266,12 @@ public class PixelartManager extends ArtManager {
         var itemFrames = IntStream.range(0, grid.size()).mapToObj(i -> {
             var stack = stacks.get(i);
             var location = grid.get(i);
+            if (MilkyPixelart.getInstance().getConfig().getBoolean("pixelarts.preventOverlapDisplay", true)) {
+                var otherHanging = location.getNearbyEntitiesByType(Hanging.class, 1.01);
+                if (otherHanging.stream().anyMatch(hanging -> !hanging.getPersistentDataContainer().has(PREVIEW_ART_KEY))) {
+                    return null;
+                }
+            }
             return player.getWorld().spawn(location, GlowItemFrame.class, glowItemFrame -> {
                 glowItemFrame.setPersistent(false);
                 glowItemFrame.setInvulnerable(true);
@@ -277,7 +281,7 @@ public class PixelartManager extends ArtManager {
                 glowItemFrame.setFacingDirection(face, true);
                 glowItemFrame.getPersistentDataContainer().set(PREVIEW_ART_KEY, PersistentDataType.BYTE, (byte) 1);
             });
-        }).map(f -> (Entity) f).toList();
+        }).filter(Objects::nonNull).map(f -> (Entity) f).toList();
 
         MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
             itemFrames.forEach(entity -> {
@@ -285,7 +289,7 @@ public class PixelartManager extends ArtManager {
                     entity.remove();
                 }
             });
-        }, MilkyPixelart.getInstance().getConfiguration().getInt("pixelarts.previewDuration", 100));
+        }, MilkyPixelart.getInstance().getConfig().getInt("pixelarts.previewDuration", 100));
 
         MilkyPixelart.getInstance().getServer().getOnlinePlayers().forEach(p -> {
             if (p.getUniqueId() == player.getUniqueId()) {
@@ -312,13 +316,14 @@ public class PixelartManager extends ArtManager {
 
     public void clearPreviewArts(@NotNull UUID playerUuid) {
         var removed = previewArts.remove(playerUuid);
-        if (removed != null) {
-            removed.forEach(entity -> {
-                if (entity.isValid()) {
-                    entity.remove();
-                }
-            });
+        if (removed == null) {
+            return;
         }
+        removed.forEach(entity -> {
+            if (entity.isValid()) {
+                entity.remove();
+            }
+        });
     }
 
     public boolean isPreviewItemFrame(@NotNull Entity entity) {
