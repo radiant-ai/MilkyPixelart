@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public final class MilkyPixelart extends JavaPlugin {
         paperCommandManager.registerCommand(pixelartCommand);
 
         if (!setupEconomy()) {
-            getLogger().severe("Economy not found, it may cause great issues! Install any economy provider like Essentials or CMI!");
+            getLogger().warning("No Economy implementation found, all operations will be free for players!");
         }
 
         //Inject managers
@@ -157,7 +158,7 @@ public final class MilkyPixelart extends JavaPlugin {
         return CompletableFuture.allOf(reload1, reload2, reload3);
     }
 
-    public Economy getEconomy() {
+    public @Nullable Economy getEconomy() {
         return economy;
     }
 
@@ -165,11 +166,11 @@ public final class MilkyPixelart extends JavaPlugin {
         return instance;
     }
 
-    public FileConfiguration getConfiguration() {
+    public @NotNull FileConfiguration getConfig() {
         return configuration;
     }
 
-    public FileConfiguration getLang() {
+    public @NotNull FileConfiguration getLang() {
         return lang;
     }
 

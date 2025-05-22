@@ -1,20 +1,40 @@
+# PLEASE DO NOT MODIFY
+version: 1
 commands:
+  # aliases for the root command, change requires server restart
   aliases:
     - pixelart
     - art
     - pxt
 banners:
+  # price of the copyright protection for the banners
   copyrightPrice: 20
 pixelarts:
+  # protect all hanging entities from being destroyed by physics (like boats) bypassing region protection
+  physicsProtection: true
+  # prevent creating preview item frames overlapping other hanging entities
+  # use either this option or 'physicsProtection' option to prevent
+  # players destroying hanging entities in protected regions by doing a preview
+  preventOverlapDisplay: true
+  # duration in ticks to show art previews
   previewDuration: 100
+  # cooldown in seconds between /art show command executions
   showArtCooldown: 300
+  # price of the copyright protection for the art maps
   copyrightPrice: 100
+  # allow preview art maps in any inventory, e.g. live chests, ender chests or even /invsee implementations
   previewEverywhere: false
+  # allow preview maps in specific inventories which name contains the following strings
   previewInventories:
     - "Auction"
     - "Market"
     - "Shop"
+  # prevent players creating a filled map in area where they cannot build, works well with any protection plugin
+  # beware of players who build over the protected zone and open a filled map there
   respectRegionProtection: true
+  # world of map arts
   worldMapArt: world_map_art
+# localization, supported values: en, ru
 lang: en
+# enable anonymized statistics about the plugin, please leave it on so I can see that people actually use my plugin
 bStats: true

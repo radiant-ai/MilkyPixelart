@@ -53,20 +53,30 @@ public class PixelartCommand extends BaseCommand {
         }
 
         CopyrightManager.Author author = protectionManager.getAuthor(item);
-        if (author == null) {
-            int price = item.getAmount() * protectionManager.getProtectionCost();
-            if (plugin.getEconomy().getBalance(player)>=price) {
-                if (protectionManager.protect(player, item)) {
-                    plugin.getEconomy().withdrawPlayer(player, price);
-                    player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
-                } else {
-                    player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
-                }
-            } else {
-                player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
-            }
-        } else {
+        if (author != null) {
             player.sendMessage(LangManager.getInstance().getLang("protect.fail_already_protected"));
+            return;
+        }
+
+        int price = item.getAmount() * protectionManager.getProtectionCost();
+        // Check if economy exists and player has enough money
+        if (plugin.getEconomy() != null && plugin.getEconomy().getBalance(player) < price) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_not_enough_money", ""+price));
+            return;
+        }
+
+        if (!protectionManager.protect(player, item)) {
+            player.sendMessage(LangManager.getInstance().getLang("protect.fail_nothing_to_protect"));
+            return;
+        }
+
+        // Only withdraw money if economy exists
+        if (plugin.getEconomy() != null) {
+            plugin.getEconomy().withdrawPlayer(player, price);
+            player.sendMessage(LangManager.getInstance().getLang("protect.success", ""+price));
+        } else {
+            // Protection is free when economy is null
+            player.sendMessage(LangManager.getInstance().getLang("protect.success", "0"));
         }
     }
 
@@ -132,20 +142,22 @@ public class PixelartCommand extends BaseCommand {
     @CommandPermission("pixelart.preview")
     @Subcommand("preview")
     @CommandCompletion("map_id")
-    public void onPreview(Player player, Integer mapId) {
-        PixelartManager.getInstance().renderArt(player, mapId);
+    public void onPreview(Player player, String mapUuid) {
+        PixelartManager.getInstance().renderBundle(player, UUID.fromString(mapUuid));
     }
 
     @CommandPermission("pixelart.show")
     @Subcommand("show")
-    public void onShow(Player player) {
-        PixelartManager.getInstance().showMaps(player, false);
+    @CommandCompletion("l|g|local|global")
+    public void onShow(Player player, String localOrGlobal) {
+        PixelartManager.getInstance().showMaps(player, false, localOrGlobal.toLowerCase().startsWith("l"));
     }
 
     @CommandPermission("pixelart.showall")
     @Subcommand("showall")
-    public void onShowAll(Player player) {
-        PixelartManager.getInstance().showMaps(player, true);
+    @CommandCompletion("l|g|local|global")
+    public void onShowAll(Player player, String localOrGlobal) {
+        PixelartManager.getInstance().showMaps(player, true, localOrGlobal.toLowerCase().startsWith("l"));
     }
 
     @CommandPermission("pixelart.reload")
@@ -157,7 +169,7 @@ public class PixelartCommand extends BaseCommand {
 
     @Subcommand("blacklist")
     @CommandPermission("pixelart.blacklist")
-    public class BlacklistCommands extends BaseCommand{
+    public static class BlacklistCommands extends BaseCommand{
 
         public BlacklistCommands() {
 

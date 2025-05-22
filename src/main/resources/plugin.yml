@@ -3,6 +3,5 @@ version: '${project.version}'
 main: fun.milkyway.milkypixelart.MilkyPixelart
 api-version: 1.21
 folia-supported: true
-depend:
-  - ProtocolLib
+softdepend:
   - Vault

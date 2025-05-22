@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir staging && cp target/${{ env.artifact_id }}-${{ env.artifact_version }}.jar staging
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Package
           path: staging

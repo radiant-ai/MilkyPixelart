@@ -15,7 +15,7 @@ public class MapCreateListener implements Listener {
 
     @EventHandler
     public void onMapUse(PlayerInteractEvent event) {
-        if (!MilkyPixelart.getInstance().getConfiguration().getBoolean("pixelarts.respectRegionProtection", false)) {
+        if (!MilkyPixelart.getInstance().getConfig().getBoolean("pixelarts.respectRegionProtection", false)) {
             return;
         }
 
@@ -37,7 +37,7 @@ public class MapCreateListener implements Listener {
     }
 
     private boolean canBuild(@NotNull Player player) {
-        String worldMapArt = MilkyPixelart.getInstance().getConfiguration().getString("pixelarts.worldMapArt", "world");
+        String worldMapArt = MilkyPixelart.getInstance().getConfig().getString("pixelarts.worldMapArt", "world");
         if (player.getWorld().getName().equals(worldMapArt) && player.getLocation().getY() > 255) {
             return false;
         }

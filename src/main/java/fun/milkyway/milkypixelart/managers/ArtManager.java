@@ -1,7 +1,5 @@
 package fun.milkyway.milkypixelart.managers;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import fun.milkyway.milkypixelart.MilkyPixelart;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -18,14 +16,12 @@ import java.util.UUID;
 
 public abstract class ArtManager {
     protected final MilkyPixelart plugin;
-    protected final ProtocolManager protocolManager;
 
     protected List<Listener> listeners;
 
     public ArtManager() {
         this.plugin = MilkyPixelart.getInstance();
         this.listeners = new LinkedList<>();
-        protocolManager = ProtocolLibrary.getProtocolManager();
         //Always inject copyright manager
         CopyrightManager.getInstance();
     }
@@ -73,17 +69,12 @@ public abstract class ArtManager {
 
     public static @Nullable ArtManager getInstance(@NotNull ItemStack itemStack) {
         if (isBanner(itemStack)) {
-
             return BannerManager.getInstance();
-
         }
 
         if (isMap(itemStack)) {
-
             return PixelartManager.getInstance();
-
         }
-
         return null;
     }
 }

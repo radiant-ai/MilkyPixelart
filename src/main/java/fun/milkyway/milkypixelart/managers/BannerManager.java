@@ -4,6 +4,8 @@ import fun.milkyway.milkypixelart.MilkyPixelart;
 import fun.milkyway.milkypixelart.listeners.BannerPaintListener;
 import fun.milkyway.milkypixelart.listeners.BannerProtectionListener;
 import fun.milkyway.milkypixelart.utils.BannerUtils;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -11,6 +13,7 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Registry;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.banner.Pattern;
@@ -113,7 +116,7 @@ public class BannerManager extends ArtManager {
 
     @Override
     public int getProtectionCost() {
-        return MilkyPixelart.getInstance().getConfiguration().getInt("banners.copyrightPrice");
+        return MilkyPixelart.getInstance().getConfig().getInt("banners.copyrightPrice");
     }
 
     public int patternNumber(@NotNull ItemStack itemStack) {
@@ -232,11 +235,10 @@ public class BannerManager extends ArtManager {
     }
 
     public void showPatternMenu(@NotNull Player player, @NotNull Block block, @NotNull DyeColor dyeColor) {
-        TextColor textColor = BannerUtils.getTextColorFromDye(dyeColor);
         Inventory inventory = Bukkit.createInventory(null, 54,
                 LangManager.getInstance().getLang("banner_paint.apply.menu.title"));
         int count = 0;
-        for (PatternType patternType : PatternType.values()) {
+        for (PatternType patternType : RegistryAccess.registryAccess().getRegistry(RegistryKey.BANNER_PATTERN)) {
             if (patternType.equals(PatternType.BASE)) {
                 continue;
             }
@@ -262,6 +264,14 @@ public class BannerManager extends ArtManager {
             }
             if (patternType.equals(PatternType.MOJANG) &&
                     !player.getInventory().contains(Material.MOJANG_BANNER_PATTERN)) {
+                continue;
+            }
+            if (patternType.equals(PatternType.FLOW) &&
+                    !player.getInventory().contains(Material.FLOW_BANNER_PATTERN)) {
+                continue;
+            }
+            if (patternType.equals(PatternType.GUSTER) &&
+                    !player.getInventory().contains(Material.GUSTER_BANNER_PATTERN)) {
                 continue;
             }
             ItemStack banner;

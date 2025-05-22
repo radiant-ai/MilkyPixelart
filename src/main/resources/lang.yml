@@ -21,6 +21,7 @@ protect:
   fail_not_enough_money: "<#FF995E>You have not enough money. You need: <#FFFF99><arg1>$"
   success: "<#9AFF0F>You've protected your masterpiece! Money spent: <#FFFF99><arg1>$"
 unprotect:
+  fail_unprotected: "<#FF995E>This art does not belong to you!"
   fail_not_protected: "<#FF995E>This item is not protected!"
   success: "<#9AFF0F>You've removed protection from the item."
 scan:
@@ -95,6 +96,10 @@ help:
     - "<#9AFF0F>- <#FFFF99>Create banners with up to 16 patterns, just right click on a banner with a dye in hands"
     - "<#9AFF0F>- <#FFFF99>Preview pixel arts right from the market GUI, just right click on the map in inventory view"
     - "<#9AFF0F>- <#FFFF99>Prevent players from creating maps in protected regions (regions should reach the maximum height)"
+    - ""
+    - "<#9AFF0F>- <#FFFF99>Creating a bundle with art maps:"
+    - "<#9AFF0F>- <#FFFF99>1. Rename the bundle to \"Name <width>x<height>\""
+    - "<#9AFF0F>- <#FFFF99>2. Place the maps in the bundle in order from left to right"
     - ""
   prices:
     pixelart: "<#9AFF0F>Protect pixel art <#FFFF99>- <#9AFF0F><arg1>$"
