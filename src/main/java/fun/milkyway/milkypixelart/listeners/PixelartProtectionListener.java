@@ -7,6 +7,7 @@ import fun.milkyway.milkypixelart.managers.CopyrightManager;
 import fun.milkyway.milkypixelart.managers.LangManager;
 import fun.milkyway.milkypixelart.managers.PixelartManager;
 import fun.milkyway.milkypixelart.utils.MessageOnceManager;
+import fun.milkyway.milkypixelart.utils.SchedulerUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -36,7 +37,7 @@ public class PixelartProtectionListener implements Listener {
             if (filledMaps.stream().anyMatch(itemStack -> artManager.getAuthor(itemStack) != null)) {
                 player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_need_cartography_table"));
                 inventory.setResult(null);
-                MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                SchedulerUtils.runTaskLater(player.getLocation(), () -> {
                     Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                     if (newPlayer != null) {
                         newPlayer.closeInventory();
@@ -75,7 +76,7 @@ public class PixelartProtectionListener implements Listener {
                 else if (author != null && !author.getUuid().equals(player.getUniqueId())) {
                     event.setResult(null);
                     player.sendMessage(LangManager.getInstance().getLang("copy.pixelart.fail_not_your_pixelart"));
-                    MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+                    SchedulerUtils.runTaskLater(player.getLocation(), () -> {
                         Player newPlayer = MilkyPixelart.getInstance().getServer().getPlayer(player.getUniqueId());
                         if (newPlayer != null) {
                             newPlayer.closeInventory();
