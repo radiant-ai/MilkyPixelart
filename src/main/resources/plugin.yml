@@ -4,3 +4,4 @@ main: fun.milkyway.milkypixelart.MilkyPixelart
 api-version: 1.21
 softdepend:
   - Vault
+folia-supported: true

@@ -25,6 +25,7 @@ import java.util.logging.Level;
 
 public final class MilkyPixelart extends JavaPlugin {
     private static MilkyPixelart instance;
+    private static boolean usingFolia;
     private Economy economy;
     private Metrics metrics;
     private FileConfiguration configuration;
@@ -32,6 +33,16 @@ public final class MilkyPixelart extends JavaPlugin {
 
     private PaperCommandManager paperCommandManager;
     private PixelartCommand pixelartCommand;
+
+    @Override
+    public void onLoad() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.scheduler.RegionScheduler");
+            usingFolia = true;
+        } catch (ClassNotFoundException e) {
+            usingFolia = false;
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -156,6 +167,10 @@ public final class MilkyPixelart extends JavaPlugin {
             return m;
         });
         return CompletableFuture.allOf(reload1, reload2, reload3);
+    }
+
+    public static boolean isFolia() {
+        return usingFolia;
     }
 
     public @Nullable Economy getEconomy() {

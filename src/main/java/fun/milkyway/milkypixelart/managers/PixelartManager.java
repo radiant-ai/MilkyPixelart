@@ -7,6 +7,7 @@ import fun.milkyway.milkypixelart.listeners.*;
 import fun.milkyway.milkypixelart.utils.BundleArt;
 import fun.milkyway.milkypixelart.utils.MaterialUtils;
 import fun.milkyway.milkypixelart.utils.OrientationUtils;
+import fun.milkyway.milkypixelart.utils.SchedulerUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -283,7 +284,7 @@ public class PixelartManager extends ArtManager {
             });
         }).filter(Objects::nonNull).map(f -> (Entity) f).toList();
 
-        MilkyPixelart.getInstance().getServer().getScheduler().runTaskLater(MilkyPixelart.getInstance(), () -> {
+        SchedulerUtils.runTaskLater(player.getLocation(), () -> {
             itemFrames.forEach(entity -> {
                 if (entity.isValid()) {
                     entity.remove();
