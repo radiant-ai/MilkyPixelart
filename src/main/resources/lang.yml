@@ -80,6 +80,8 @@ banner_paint:
     fail_protected: "<#FF995E>You can't erase patterns from the banner protected by someone else!"
     fail_no_patterns: "<#FF995E>There are no patterns to erase!"
     success: "<#9AFF0F>You've erased a pattern from the banner."
+artmap:
+  mount_protected: "<#FF995E>This pixel art is protected and cannot be edited on an easel!"
 region_protection:
   pixelart:
     fail_no_access: "<#FF995E>You can't create a map here!"

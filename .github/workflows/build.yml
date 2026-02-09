@@ -19,6 +19,11 @@ jobs:
           echo "artifact_id=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "artifact_version=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout=true)" >> $GITHUB_ENV
           echo "minecraft_versions=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=minecraftVersions -q -DforceStdout=true)" >> $GITHUB_ENV
+      - name: Install ArtMap dependency
+        run: |
+          curl -L -o ArtMap.jar "https://gitlab.com/api/v4/projects/7002065/packages/generic/ArtMap/3.9.24/ArtMap-JDK21-3.9.24.jar"
+          echo "16c9817ef5d76a616f82cdc5ba852665c0b0d46a5b3af4be3f8c3abf94680fb7  ArtMap.jar" | sha256sum -c
+          mvn install:install-file -Dfile=ArtMap.jar -DgroupId=me.Fupery -DartifactId=ArtMap -Dversion=3.9.24 -Dpackaging=jar -q
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots package
       - name: Copy jar files to staging

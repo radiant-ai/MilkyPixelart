@@ -80,6 +80,8 @@ banner_paint:
     fail_protected: "<#FF995E>Вы не можете вытирать узоры на баннерах, защищенных кем-то другим!"
     fail_no_patterns: "<#FF995E>На этом баннере нет узоров!"
     success: "<#9AFF0F>Вы вытерли узор с банера."
+artmap:
+  mount_protected: "<#FF995E>Этот пиксельарт защищен и не может быть изменен на мольберте!"
 region_protection:
   pixelart:
     fail_no_access: "<#FF995E>Вы не можете создавать карты тут!"

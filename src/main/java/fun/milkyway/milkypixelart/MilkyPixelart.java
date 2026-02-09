@@ -71,6 +71,8 @@ public final class MilkyPixelart extends JavaPlugin {
         PixelartManager.getInstance();
         BannerManager.getInstance();
 
+        setupArtMapHook();
+
         reloadBstats();
     }
 
@@ -84,6 +86,19 @@ public final class MilkyPixelart extends JavaPlugin {
         }
         economy = rsp.getProvider();
         return true;
+    }
+
+    private void setupArtMapHook() {
+        if (getServer().getPluginManager().getPlugin("ArtMap") == null) {
+            return;
+        }
+        try {
+            var listener = new fun.milkyway.milkypixelart.listeners.ArtMapListener();
+            getServer().getPluginManager().registerEvents(listener, this);
+            getLogger().info("ArtMap hook registered — protected pixelarts cannot be edited on easels.");
+        } catch (NoClassDefFoundError e) {
+            getLogger().warning("ArtMap found but hook failed to register: " + e.getMessage());
+        }
     }
 
     @Override
